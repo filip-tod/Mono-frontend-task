@@ -21,7 +21,7 @@ const LoginPage = observer(() => {
     return (
         <div>
             <h1>Login</h1>
-            {authStore.authError && <p style={{ color: 'red' }}>{authStore.authError}</p>}
+            {authStore.authError && <p style={{color: 'red'}}>{authStore.authError}</p>}
             <form onSubmit={handleSubmit}>
                 <div>
                     <label>Email:</label>
