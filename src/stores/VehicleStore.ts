@@ -1,26 +1,23 @@
-import { makeAutoObservable, runInAction } from 'mobx';
+// src/stores/VehicleStore.ts
+import { makeObservable, observable, action, runInAction } from 'mobx';
 import { ref, get, set, push } from 'firebase/database';
 import { db } from '../services/firebaseConfig.ts';
-
-interface IVehicleMake {
-    id: string;
-    name: string;
-    abrv: string;
-}
-
-interface IVehicleModel {
-    id: string;
-    makeId: string;
-    name: string;
-    abrv: string;
-}
+import {IVehicleMake} from "../interfaces/IVehicleMake.ts";
+import {IVehicleModel} from "../interfaces/IVehicleModel.ts";
 
 class VehicleStore {
     vehicleMakes: IVehicleMake[] = [];
     vehicleModels: IVehicleModel[] = [];
 
     constructor() {
-        makeAutoObservable(this);
+        makeObservable(this, {
+            vehicleMakes: observable,
+            vehicleModels: observable,
+            fetchVehicleMakes: action,
+            fetchVehicleModels: action,
+            addVehicleMake: action,
+            addVehicleModel: action,
+        });
     }
 
     // Fetch VehicleMakes from Realtime Database
