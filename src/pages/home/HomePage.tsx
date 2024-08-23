@@ -1,12 +1,10 @@
+import VehicleList from "../../components/Table.tsx";
+
 export const HomePage = () => {
     return(
         <>
-            <ol>
-                <li>prvi auto</li>
-                <li>drugi auto</li>
-                <li>treci auto</li>
-                <li>cetvrti auto</li>
-            </ol>
+            <h1>Home Page</h1>
+           <VehicleList/>
         </>
     );
 }
