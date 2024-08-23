@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useNavigate } from 'react-router-dom';
 import authStore from "../../stores/AuthStore.ts";
+import GoogleIcon from '../../assets/icons/google/icons8-google.svg';
+import ServiceButton from "../../components/ServiceButton.tsx";
 
 const LoginPage = observer(() => {
     const [email, setEmail] = useState('');
@@ -14,15 +16,15 @@ const LoginPage = observer(() => {
         await authStore.login(email, password);
 
         if (!authStore.authError) {
-            navigate('/home'); // Preusmjeri na HomePage nakon uspješne prijave
+            navigate('/home');
         }
     };
 
     return (
-        <div>
+        <div className={'flex flex-col items-center justify-center h-screen w-screen gap-6 border'}>
             <h1>Login</h1>
             {authStore.authError && <p style={{color: 'red'}}>{authStore.authError}</p>}
-            <form onSubmit={handleSubmit}>
+            <form className={'flex flex-col items-center gap-4'} onSubmit={handleSubmit}>
                 <div>
                     <label>Email:</label>
                     <input
@@ -44,9 +46,20 @@ const LoginPage = observer(() => {
                 <button type="submit" disabled={authStore.loading}>
                     {authStore.loading ? 'Loading...' : 'Login'}
                 </button>
-                <div>horizontalna crta koju cemo dodati kad dode tailwind</div>
-                <div> ovdje ce biti box sa google sign in i mozda jos neki servis</div>
+                <div  className="w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+
+                <ServiceButton
+                    icon={GoogleIcon}
+                    text="Continue with Google"
+                    endpoint="https://your-api.com/auth/google"
+                />
             </form>
+
+            <div>
+                <p>email: mono-carshop-app@gmail.com</p>
+                <p>password: carshop12345678</p>
+
+            </div>
         </div>
     );
 });
