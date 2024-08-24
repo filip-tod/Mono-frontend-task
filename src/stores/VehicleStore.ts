@@ -1,4 +1,3 @@
-// src/stores/VehicleStore.ts
 import { makeObservable, observable, action, runInAction } from 'mobx';
 import { ref, get, set, push } from 'firebase/database';
 import { db } from '../services/firebaseConfig.ts';
