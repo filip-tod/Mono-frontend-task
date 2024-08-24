@@ -58,7 +58,6 @@ const LoginPage = observer(() => {
             <div>
                 <p>email: mono-carshop-app@gmail.com</p>
                 <p>password: carshop12345678</p>
-
             </div>
         </div>
     );
