@@ -1,4 +1,3 @@
-// src/stores/VehicleStore.ts
 import { makeObservable, observable, action, runInAction } from 'mobx';
 import { ref, get, set, push } from 'firebase/database';
 import { db } from '../services/firebaseConfig.ts';
@@ -20,7 +19,6 @@ class VehicleStore {
         });
     }
 
-    // Fetch VehicleMakes from Realtime Database
     async fetchVehicleMakes() {
         const vehicleMakesRef = ref(db, 'VehicleMakes');
         const snapshot = await get(vehicleMakesRef);
@@ -74,15 +72,18 @@ class VehicleStore {
     async addVehicleModel(makeId: string, name: string, abrv: string) {
         const vehicleModelsRef = ref(db, 'VehicleModels');
         const newModelRef = push(vehicleModelsRef);
-        await set(newModelRef, { makeId, name, abrv });
+
+        const newModelData = {
+            id: newModelRef.key!,
+            makeId,
+            name,
+            abrv,
+        };
+
+        await set(newModelRef, newModelData);
 
         runInAction(() => {
-            this.vehicleModels.push({
-                id: newModelRef.key!,
-                makeId,
-                name,
-                abrv,
-            });
+            this.vehicleModels.push(newModelData);
         });
     }
 }
