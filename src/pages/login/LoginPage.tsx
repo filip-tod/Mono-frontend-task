@@ -20,6 +20,13 @@ const LoginPage = observer(() => {
         }
     };
 
+    const handleGoogleLogin = async () => {
+        await authStore.loginWithGoogle();
+        if (!authStore.authError) {
+            navigate('/home');
+        }
+    };
+
     return (
         <div className={'flex flex-col items-center justify-center h-screen w-screen gap-6 border'}>
             <h1>Login</h1>
@@ -51,7 +58,7 @@ const LoginPage = observer(() => {
                 <ServiceButton
                     icon={GoogleIcon}
                     text="Continue with Google"
-                    endpoint="https://your-api.com/auth/google"
+                    onClick={handleGoogleLogin}
                 />
             </form>
 

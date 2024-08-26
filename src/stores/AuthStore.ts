@@ -1,5 +1,14 @@
 import { makeObservable, observable, action, runInAction } from 'mobx';
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, User } from 'firebase/auth';
+import {
+    getAuth,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    signOut,
+    signInWithPopup,
+    GoogleAuthProvider,
+    User
+} from 'firebase/auth';
 import { app } from '../services/firebaseConfig';
 
 class AuthStore {
@@ -16,6 +25,7 @@ class AuthStore {
             login: action,
             register: action,
             logout: action,
+            loginWithGoogle: action,  // Dodano
             setUser: action,
             setLoading: action,
             setAuthError: action,
@@ -115,6 +125,34 @@ class AuthStore {
             }
         } finally {
             this.setLoading(false);
+        }
+    }
+
+    // Dodajemo funkcionalnost za prijavu putem Google-a
+    async loginWithGoogle() {
+        this.setLoading(true);
+        const provider = new GoogleAuthProvider();
+
+        try {
+            const result = await signInWithPopup(this.auth, provider);
+            runInAction(() => {
+                this.setUser(result.user);
+                this.setAuthError(null);
+            });
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                runInAction(() => {
+                    this.setAuthError(error.message);
+                });
+            } else {
+                runInAction(() => {
+                    this.setAuthError("An unknown error occurred.");
+                });
+            }
+        } finally {
+            runInAction(() => {
+                this.setLoading(false);
+            });
         }
     }
 }
