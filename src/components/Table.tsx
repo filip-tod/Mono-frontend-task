@@ -25,11 +25,11 @@ const VehicleList = () => {
         setLoading(true);
 
         try {
-            let query = `https://mono-react-app-default-rtdb.firebaseio.com/VehicleModels.json?orderBy="${sorting[0]?.id || 'Name'}"&limitToFirst=${pagination.pageSize + 1}`;
+            const sortKey = (sorting[0]?.id || 'Name') as keyof IVehicleModel;
+            let query = `https://mono-react-app-default-rtdb.firebaseio.com/VehicleModels.json?orderBy="${sortKey}"&limitToFirst=${pagination.pageSize + 1}`;
 
             if (isNextPage && lastVisible) {
-                // @ts-ignore
-                query += `&startAt="${lastVisible[sorting[0]?.id || 'Name']}"`;
+                query += `&startAt="${lastVisible[sortKey]}"`;
             }
 
             const response = await axios.get(query);
@@ -45,6 +45,7 @@ const VehicleList = () => {
             } else {
                 setLastVisible(null);
             }
+
             setVehicles(vehiclesArray);
 
         } catch (error) {

@@ -5,6 +5,8 @@ import LoginPage from "./pages/login/LoginPage";
 import { HomePage } from "./pages/home/HomePage";
 import { NewCarPage } from "./pages/cars/NewCarPage";
 import { EditCarPage } from "./pages/cars/EditCarPage";
+import NavBar from "./components/NavBar.tsx";
+import Footer from "./components/Footer.tsx";
 
 const App = observer(() => {
     if (authStore.loading) {
@@ -12,6 +14,8 @@ const App = observer(() => {
     }
 
     return (
+        <>
+        <NavBar/>
         <Router>
             <Routes>
                 <Route path="/login" element={<LoginPage />} />
@@ -27,6 +31,8 @@ const App = observer(() => {
                 <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
         </Router>
+            <Footer/>
+        </>
     );
 });
 
