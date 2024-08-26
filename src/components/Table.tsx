@@ -44,7 +44,7 @@ const VehicleList = () => {
     const columns = useMemo(
         () => [
             {
-                accessorKey: 'Id',
+                accessorKey: 'id',
                 header: 'ID',
             },
             {
