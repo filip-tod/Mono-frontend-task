@@ -41,16 +41,11 @@ const VehicleList = () => {
 
             if (vehiclesArray.length > pagination.pageSize) {
                 setLastVisible(vehiclesArray[pagination.pageSize - 1]);
-                vehiclesArray.pop(); // Ukloni dodatni item koji služi za proveru postojanja sledeće stranice
+                vehiclesArray.pop();
             } else {
                 setLastVisible(null);
             }
-
-            if (isNextPage) {
-                setVehicles(prevVehicles => [...prevVehicles, ...vehiclesArray]);
-            } else {
-                setVehicles(vehiclesArray);
-            }
+            setVehicles(vehiclesArray);
 
         } catch (error) {
             console.error("Failed to fetch vehicles", error);
@@ -70,7 +65,7 @@ const VehicleList = () => {
 
     useEffect(() => {
         fetchVehicles();
-    }, []);
+    }, [pagination]);
 
     const columns = useMemo(
         () => [
