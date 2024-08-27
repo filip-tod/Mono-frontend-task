@@ -1,6 +1,6 @@
 export interface IVehicleModel {
-    id: string;
-    makeId: string;
-    name: string;
-    abrv: string;
+    Id: string;
+    MakeId: string;
+    Name: string;
+    Abrv: string;
 }

@@ -28,7 +28,7 @@ const LoginPage = observer(() => {
     };
 
     return (
-        <div className={'flex flex-col items-center justify-center h-screen w-screen gap-6 border'}>
+        <div className={'flex flex-col items-center justify-center h-80vh w-screen gap-6 '}>
             <h1>Login</h1>
             {authStore.authError && <p style={{color: 'red'}}>{authStore.authError}</p>}
             <form className={'flex flex-col items-center gap-4'} onSubmit={handleSubmit}>
