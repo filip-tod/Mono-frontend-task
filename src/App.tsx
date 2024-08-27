@@ -4,9 +4,11 @@ import { observer } from 'mobx-react-lite';
 import LoginPage from "./pages/login/LoginPage";
 import { HomePage } from "./pages/home/HomePage";
 import { NewCarPage } from "./pages/cars/NewCarPage";
-import { EditCarPage } from "./pages/cars/EditCarPage";
 import NavBar from "./components/NavBar.tsx";
 import Footer from "./components/Footer.tsx";
+import EditCarPage from "./pages/cars/EditCarPage.tsx";
+import {MakersPage} from "./pages/makers/MakersPage.tsx";
+
 
 const App = observer(() => {
     if (authStore.loading) {
@@ -27,6 +29,9 @@ const App = observer(() => {
                 } />
                 <Route path="/cars/edit/:id" element={
                     authStore.user ? <EditCarPage /> : <Navigate to="/login" />
+                } />
+                <Route path="/cars/makers/" element={
+                    authStore.user ? <MakersPage /> : <Navigate to="/login" />
                 } />
                 <Route path="*" element={<Navigate to="/login" />} />
             </Routes>

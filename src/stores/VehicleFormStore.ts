@@ -1,20 +1,20 @@
 import { makeObservable, observable, action } from 'mobx';
 
 class VehicleFormStore {
-    name = '';
-    makeId = '';
-    abrv = '';
+    Name = '';
+    MakeId = '';
+    Abrv = '';
     errors = {
-        name: '',
-        makeId: '',
-        abrv: ''
+        Name: '',
+        MakeId: '',
+        Abrv: ''
     };
 
     constructor() {
         makeObservable(this, {
-            name: observable,
-            makeId: observable,
-            abrv: observable,
+            Name: observable,
+            MakeId: observable,
+            Abrv: observable,
             errors: observable,
             setName: action,
             setMakeId: action,
@@ -25,32 +25,32 @@ class VehicleFormStore {
     }
 
     setName(value: string) {
-        this.name = value;
-        this.errors.name = value ? '' : 'Name is required';
+        this.Name = value;
+        this.errors.Name = value ? '' : 'Name is required';
     }
 
     setMakeId(value: string) {
-        this.makeId = value;
-        this.errors.makeId = value ? '' : 'Make ID is required';
+        this.MakeId = value;
+        this.errors.MakeId = value ? '' : 'Make ID is required';
     }
 
     setAbrv(value: string) {
-        this.abrv = value;
-        this.errors.abrv = value ? '' : 'Abbreviation is required';
+        this.Abrv = value;
+        this.errors.Abrv = value ? '' : 'Abbreviation is required';
     }
 
     validate() {
-        this.setName(this.name);
-        this.setMakeId(this.makeId);
-        this.setAbrv(this.abrv);
-        return !this.errors.name && !this.errors.makeId && !this.errors.abrv;
+        this.setName(this.Name);
+        this.setMakeId(this.MakeId);
+        this.setAbrv(this.Abrv);
+        return !this.errors.Name && !this.errors.MakeId && !this.errors.Abrv;
     }
 
     resetForm() {
-        this.name = '';
-        this.makeId = '';
-        this.abrv = '';
-        this.errors = { name: '', makeId: '', abrv: '' };
+        this.Name = '';
+        this.MakeId = '';
+        this.Abrv = '';
+        this.errors = { Name: '', MakeId: '', Abrv: '' };
     }
 }
 

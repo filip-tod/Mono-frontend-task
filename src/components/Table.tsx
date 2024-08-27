@@ -36,7 +36,7 @@ const VehicleList = () => {
 
             const vehiclesArray = Object.keys(response.data).map(key => ({
                 ...response.data[key],
-                id: key,
+                Id: key,
             }));
 
             if (vehiclesArray.length > pagination.pageSize) {
@@ -58,11 +58,12 @@ const VehicleList = () => {
     const handleDelete = async (id: string) => {
         try {
             await axios.delete(`https://mono-react-app-default-rtdb.firebaseio.com/VehicleModels/${id}.json`);
-            setVehicles(prevVehicles => prevVehicles.filter(vehicle => vehicle.id !== id));
+            setVehicles(prevVehicles => prevVehicles.filter(vehicle => vehicle.Id !== id));
         } catch (error) {
             console.error("Failed to delete vehicle", error);
         }
     };
+
 
     useEffect(() => {
         fetchVehicles();
@@ -71,7 +72,7 @@ const VehicleList = () => {
     const columns = useMemo(
         () => [
             {
-                accessorKey: 'id',
+                accessorKey: 'Id',
                 header: 'ID',
             },
             {
@@ -92,13 +93,13 @@ const VehicleList = () => {
                 cell: ({ row }: { row: Row<IVehicleModel> }) => (
                     <div className="flex space-x-2">
                         <button
-                            onClick={() => navigate(`/cars/edit/${row.original.id}`)}
+                            onClick={() => navigate(`/cars/edit/${row.original.Id}`)}
                             className="px-2 py-1 text-white bg-blue-500 rounded hover:bg-blue-600"
                         >
                             Edit
                         </button>
                         <button
-                            onClick={() => handleDelete(row.original.id)}
+                            onClick={() => handleDelete(row.original.Id)}
                             className="px-2 py-1 text-white bg-red-500 rounded hover:bg-red-600"
                         >
                             Delete
@@ -118,7 +119,7 @@ const VehicleList = () => {
         getPaginationRowModel: getPaginationRowModel(),
         manualPagination: true,
         manualSorting: true,
-        pageCount: -1, // Ukupan broj stranica nije poznat
+        pageCount: -1,
         state: {
             pagination,
             sorting,
