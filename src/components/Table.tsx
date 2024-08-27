@@ -1,11 +1,13 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
     useReactTable,
     getCoreRowModel,
     getSortedRowModel,
     getPaginationRowModel,
     flexRender,
-    Row
+    Row,
+    SortingState,
+    PaginationState,
 } from '@tanstack/react-table';
 import { IVehicleModel } from "../interfaces/IVehicleModel";
 import { useNavigate } from "react-router-dom";
@@ -13,38 +15,64 @@ import axios from "axios";
 
 const VehicleList = () => {
     const [vehicles, setVehicles] = useState<IVehicleModel[]>([]);
+    const [lastVisible, setLastVisible] = useState<IVehicleModel | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [sorting, setSorting] = useState<SortingState>([]);
+    const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
     const navigate = useNavigate();
 
-    const fetchVehicles = async () => {
+    const fetchVehicles = useCallback(async (isNextPage = false) => {
+        setLoading(true);
+
         try {
-            const response = await axios.get('https://mono-react-app-default-rtdb.firebaseio.com/VehicleModels.json');
+            const sortKey = (sorting[0]?.id || 'Name') as keyof IVehicleModel;
+            let query = `https://mono-react-app-default-rtdb.firebaseio.com/VehicleModels.json?orderBy="${sortKey}"&limitToFirst=${pagination.pageSize + 1}`;
+
+            if (isNextPage && lastVisible) {
+                query += `&startAt="${lastVisible[sortKey]}"`;
+            }
+
+            const response = await axios.get(query);
+
             const vehiclesArray = Object.keys(response.data).map(key => ({
                 ...response.data[key],
-                id: key,
+                Id: key,
             }));
+
+            if (vehiclesArray.length > pagination.pageSize) {
+                setLastVisible(vehiclesArray[pagination.pageSize - 1]);
+                vehiclesArray.pop();
+            } else {
+                setLastVisible(null);
+            }
+
             setVehicles(vehiclesArray);
+
         } catch (error) {
             console.error("Failed to fetch vehicles", error);
+        } finally {
+            setLoading(false);
         }
-    };
+    }, [sorting, pagination.pageSize, lastVisible]);
 
     const handleDelete = async (id: string) => {
         try {
             await axios.delete(`https://mono-react-app-default-rtdb.firebaseio.com/VehicleModels/${id}.json`);
-            setVehicles(prevVehicles => prevVehicles.filter(vehicle => vehicle.id !== id));
+            setVehicles(prevVehicles => prevVehicles.filter(vehicle => vehicle.Id !== id));
         } catch (error) {
             console.error("Failed to delete vehicle", error);
         }
     };
 
+
     useEffect(() => {
         fetchVehicles();
-    }, []);
+    }, [pagination]);
 
     const columns = useMemo(
         () => [
             {
-                accessorKey: 'id',
+                accessorKey: 'Id',
                 header: 'ID',
             },
             {
@@ -65,13 +93,13 @@ const VehicleList = () => {
                 cell: ({ row }: { row: Row<IVehicleModel> }) => (
                     <div className="flex space-x-2">
                         <button
-                            onClick={() => navigate(`/cars/edit/${row.original.id}`)}
+                            onClick={() => navigate(`/cars/edit/${row.original.Id}`)}
                             className="px-2 py-1 text-white bg-blue-500 rounded hover:bg-blue-600"
                         >
                             Edit
                         </button>
                         <button
-                            onClick={() => handleDelete(row.original.id)}
+                            onClick={() => handleDelete(row.original.Id)}
                             className="px-2 py-1 text-white bg-red-500 rounded hover:bg-red-600"
                         >
                             Delete
@@ -89,7 +117,15 @@ const VehicleList = () => {
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-        initialState: { pagination: { pageSize: 10 } },
+        manualPagination: true,
+        manualSorting: true,
+        pageCount: -1,
+        state: {
+            pagination,
+            sorting,
+        },
+        onPaginationChange: setPagination,
+        onSortingChange: setSorting,
     });
 
     return (
@@ -134,29 +170,41 @@ const VehicleList = () => {
                 <div>
                     <button
                         className="px-3 py-1 border rounded-l-md bg-gray-200 dark:bg-gray-700"
-                        onClick={() => table.setPageIndex(0)}
-                        disabled={!table.getCanPreviousPage()}
+                        onClick={() => {
+                            setPagination(prev => ({ ...prev, pageIndex: 0 }));
+                            fetchVehicles();
+                        }}
+                        disabled={pagination.pageIndex === 0}
                     >
                         {'<<'}
                     </button>
                     <button
                         className="px-3 py-1 border bg-gray-200 dark:bg-gray-700"
-                        onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage()}
+                        onClick={() => {
+                            setPagination(prev => ({ ...prev, pageIndex: Math.max(prev.pageIndex - 1, 0) }));
+                            fetchVehicles(true);
+                        }}
+                        disabled={pagination.pageIndex === 0}
                     >
                         {'<'}
                     </button>
                     <button
                         className="px-3 py-1 border bg-gray-200 dark:bg-gray-700"
-                        onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage()}
+                        onClick={() => {
+                            setPagination(prev => ({ ...prev, pageIndex: prev.pageIndex + 1 }));
+                            fetchVehicles(true);
+                        }}
+                        disabled={!lastVisible}
                     >
                         {'>'}
                     </button>
                     <button
                         className="px-3 py-1 border rounded-r-md bg-gray-200 dark:bg-gray-700"
-                        onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                        disabled={!table.getCanNextPage()}
+                        onClick={() => {
+                            setPagination(prev => ({ ...prev, pageIndex: prev.pageIndex + 1 }));
+                            fetchVehicles(true);
+                        }}
+                        disabled={!lastVisible}
                     >
                         {'>>'}
                     </button>
@@ -165,18 +213,18 @@ const VehicleList = () => {
                 <span>
                     Page{' '}
                     <strong>
-                        {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
-                    </strong>{' '}
+                        {pagination.pageIndex + 1}
+                    </strong>
                 </span>
 
                 <select
-                    value={table.getState().pagination.pageSize}
-                    onChange={e => table.setPageSize(Number(e.target.value))}
+                    value={pagination.pageSize}
+                    onChange={e => setPagination(prev => ({ ...prev, pageSize: Number(e.target.value) }))}
                     className="border rounded bg-gray-50 dark:bg-gray-700 dark:text-gray-300"
                 >
-                    {[10, 20, 30, 40, 50].map(pageSize => (
-                        <option key={pageSize} value={pageSize}>
-                            Show {pageSize}
+                    {[10, 20, 30, 40, 50].map(size => (
+                        <option key={size} value={size}>
+                            Show {size}
                         </option>
                     ))}
                 </select>
@@ -187,6 +235,9 @@ const VehicleList = () => {
             >
                 Add new Car
             </button>
+            <span>
+                {loading}
+            </span>
         </div>
     );
 };

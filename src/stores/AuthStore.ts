@@ -128,7 +128,6 @@ class AuthStore {
         }
     }
 
-    // Dodajemo funkcionalnost za prijavu putem Google-a
     async loginWithGoogle() {
         this.setLoading(true);
         const provider = new GoogleAuthProvider();

@@ -1,13 +1,23 @@
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import authStore from './stores/AuthStore';
 import { observer } from 'mobx-react-lite';
-import LoginPage from "./pages/login/LoginPage.tsx";
-import { HomePage } from "./pages/home/HomePage.tsx";
-import { NewCarPage } from "./pages/cars/NewCarPage.tsx";
-import {EditCarPage} from "./pages/cars/EditCarPage.tsx";
+import LoginPage from "./pages/login/LoginPage";
+import { HomePage } from "./pages/home/HomePage";
+import { NewCarPage } from "./pages/cars/NewCarPage";
+import NavBar from "./components/NavBar.tsx";
+import Footer from "./components/Footer.tsx";
+import EditCarPage from "./pages/cars/EditCarPage.tsx";
+import {MakersPage} from "./pages/makers/MakersPage.tsx";
+
 
 const App = observer(() => {
+    if (authStore.loading) {
+        return <div>Loading...</div>;
+    }
+
     return (
+        <>
+        <NavBar/>
         <Router>
             <Routes>
                 <Route path="/login" element={<LoginPage />} />
@@ -20,9 +30,14 @@ const App = observer(() => {
                 <Route path="/cars/edit/:id" element={
                     authStore.user ? <EditCarPage /> : <Navigate to="/login" />
                 } />
+                <Route path="/cars/makers/" element={
+                    authStore.user ? <MakersPage /> : <Navigate to="/login" />
+                } />
                 <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
         </Router>
+            <Footer/>
+        </>
     );
 });
 

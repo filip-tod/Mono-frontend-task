@@ -1,5 +1,5 @@
 export interface IVehicleMake {
-    id: string;
-    name: string;
-    abrv: string;
+    Id: string;
+    Name: string;
+    Abrv: string;
 }
