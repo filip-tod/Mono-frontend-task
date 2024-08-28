@@ -27,9 +27,9 @@ class VehicleStore {
             this.vehicleMakes = [];
             snapshot.forEach(childSnapshot => {
                 this.vehicleMakes.push({
-                    id: childSnapshot.key!,
-                    name: childSnapshot.val().name,
-                    abrv: childSnapshot.val().abrv,
+                    Id: childSnapshot.key!,
+                    Name: childSnapshot.val().name,
+                    Abrv: childSnapshot.val().abrv,
                 });
             });
         });
@@ -44,40 +44,40 @@ class VehicleStore {
             this.vehicleModels = [];
             snapshot.forEach(childSnapshot => {
                 this.vehicleModels.push({
-                    id: childSnapshot.key!,
-                    makeId: childSnapshot.val().makeId,
-                    name: childSnapshot.val().name,
-                    abrv: childSnapshot.val().abrv,
+                    Id: childSnapshot.key!,
+                    MakeId: childSnapshot.val().makeId,
+                    Name: childSnapshot.val().name,
+                    Abrv: childSnapshot.val().abrv,
                 });
             });
         });
     }
 
     // Add a new VehicleMake to Realtime Database
-    async addVehicleMake(name: string, abrv: string) {
+    async addVehicleMake(Name: string, Abrv: string) {
         const vehicleMakesRef = ref(db, 'VehicleMakes');
         const newMakeRef = push(vehicleMakesRef);
-        await set(newMakeRef, { name, abrv });
+        await set(newMakeRef, { Name, Abrv });
 
         runInAction(() => {
             this.vehicleMakes.push({
-                id: newMakeRef.key!,
-                name,
-                abrv,
+                Id: newMakeRef.key!,
+                Name,
+                Abrv,
             });
         });
     }
 
     // Add a new VehicleModel to Realtime Database
-    async addVehicleModel(makeId: string, name: string, abrv: string) {
+    async addVehicleModel(makeId: string, Name: string, Abrv: string) {
         const vehicleModelsRef = ref(db, 'VehicleModels');
         const newModelRef = push(vehicleModelsRef);
 
-        const newModelData = {
-            id: newModelRef.key!,
-            makeId,
-            name,
-            abrv,
+        const newModelData: IVehicleModel = {
+            Id: newModelRef.key!,
+            MakeId: makeId,
+            Name,
+            Abrv
         };
 
         await set(newModelRef, newModelData);

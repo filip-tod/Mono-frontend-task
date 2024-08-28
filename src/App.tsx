@@ -20,7 +20,9 @@ const App = observer(() => {
         <NavBar/>
         <Router>
             <Routes>
-                <Route path="/login" element={<LoginPage />} />
+                <Route path="/login" element=
+                    { !authStore.user ? <LoginPage /> : <Navigate to="/home" /> }
+                />
                 <Route path="/home" element={
                     authStore.user ? <HomePage /> : <Navigate to="/login" />
                 } />

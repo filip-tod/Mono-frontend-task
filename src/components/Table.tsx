@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
     useReactTable,
     getCoreRowModel,
@@ -9,24 +9,28 @@ import {
     SortingState,
     PaginationState,
 } from '@tanstack/react-table';
-import { IVehicleModel } from "../interfaces/IVehicleModel";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const VehicleList = () => {
-    const [vehicles, setVehicles] = useState<IVehicleModel[]>([]);
-    const [lastVisible, setLastVisible] = useState<IVehicleModel | null>(null);
+interface TableProps {
+    endpoint: string;
+    columnsConfig: any[];
+    onAdd: () => void;
+    onEdit: (id: string) => void;
+}
+
+const Table: React.FC<TableProps> = ({ endpoint, columnsConfig, onAdd, onEdit }) => {
+    const [data, setData] = useState<any[]>([]);
+    const [lastVisible, setLastVisible] = useState<any | null>(null);
     const [loading, setLoading] = useState(false);
     const [sorting, setSorting] = useState<SortingState>([]);
     const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
-    const navigate = useNavigate();
 
-    const fetchVehicles = useCallback(async (isNextPage = false) => {
+    const fetchData = useCallback(async (isNextPage = false) => {
         setLoading(true);
 
         try {
-            const sortKey = (sorting[0]?.id || 'Name') as keyof IVehicleModel;
-            let query = `https://mono-react-app-default-rtdb.firebaseio.com/VehicleModels.json?orderBy="${sortKey}"&limitToFirst=${pagination.pageSize + 1}`;
+            const sortKey = (sorting[0]?.id || 'Name');
+            let query = `${endpoint}?orderBy="${sortKey}"&limitToFirst=${pagination.pageSize + 1}`;
 
             if (isNextPage && lastVisible) {
                 query += `&startAt="${lastVisible[sortKey]}"`;
@@ -34,66 +38,50 @@ const VehicleList = () => {
 
             const response = await axios.get(query);
 
-            const vehiclesArray = Object.keys(response.data).map(key => ({
+            const dataArray = Object.keys(response.data).map(key => ({
                 ...response.data[key],
                 Id: key,
             }));
 
-            if (vehiclesArray.length > pagination.pageSize) {
-                setLastVisible(vehiclesArray[pagination.pageSize - 1]);
-                vehiclesArray.pop();
+            if (dataArray.length > pagination.pageSize) {
+                setLastVisible(dataArray[pagination.pageSize - 1]);
+                dataArray.pop();
             } else {
                 setLastVisible(null);
             }
 
-            setVehicles(vehiclesArray);
+            setData(dataArray);
 
         } catch (error) {
-            console.error("Failed to fetch vehicles", error);
+            console.error("Failed to fetch data", error);
         } finally {
             setLoading(false);
         }
-    }, [sorting, pagination.pageSize, lastVisible]);
+    }, [sorting, pagination.pageSize, lastVisible, endpoint]);
 
     const handleDelete = async (id: string) => {
         try {
-            await axios.delete(`https://mono-react-app-default-rtdb.firebaseio.com/VehicleModels/${id}.json`);
-            setVehicles(prevVehicles => prevVehicles.filter(vehicle => vehicle.Id !== id));
+            await axios.delete(`${endpoint}/${id}.json`);
+            setData(prevData => prevData.filter(item => item.Id !== id));
         } catch (error) {
-            console.error("Failed to delete vehicle", error);
+            console.error("Failed to delete item", error);
         }
     };
 
-
     useEffect(() => {
-        fetchVehicles();
+        fetchData();
     }, [pagination]);
 
     const columns = useMemo(
         () => [
-            {
-                accessorKey: 'Id',
-                header: 'ID',
-            },
-            {
-                accessorKey: 'MakeId',
-                header: 'Make ID',
-            },
-            {
-                accessorKey: 'Name',
-                header: 'Name',
-            },
-            {
-                accessorKey: 'Abrv',
-                header: 'Abrv',
-            },
+            ...columnsConfig,
             {
                 id: 'actions',
                 header: 'Actions',
-                cell: ({ row }: { row: Row<IVehicleModel> }) => (
+                cell: ({ row }: { row: Row<any> }) => (
                     <div className="flex space-x-2">
                         <button
-                            onClick={() => navigate(`/cars/edit/${row.original.Id}`)}
+                            onClick={() => onEdit(row.original.Id)}
                             className="px-2 py-1 text-white bg-blue-500 rounded hover:bg-blue-600"
                         >
                             Edit
@@ -108,11 +96,11 @@ const VehicleList = () => {
                 ),
             },
         ],
-        [navigate]
+        [onEdit]
     );
 
     const table = useReactTable({
-        data: vehicles,
+        data,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getSortedRowModel: getSortedRowModel(),
@@ -167,73 +155,14 @@ const VehicleList = () => {
             </table>
 
             <div className="pagination py-4 flex justify-between items-center">
-                <div>
-                    <button
-                        className="px-3 py-1 border rounded-l-md bg-gray-200 dark:bg-gray-700"
-                        onClick={() => {
-                            setPagination(prev => ({ ...prev, pageIndex: 0 }));
-                            fetchVehicles();
-                        }}
-                        disabled={pagination.pageIndex === 0}
-                    >
-                        {'<<'}
-                    </button>
-                    <button
-                        className="px-3 py-1 border bg-gray-200 dark:bg-gray-700"
-                        onClick={() => {
-                            setPagination(prev => ({ ...prev, pageIndex: Math.max(prev.pageIndex - 1, 0) }));
-                            fetchVehicles(true);
-                        }}
-                        disabled={pagination.pageIndex === 0}
-                    >
-                        {'<'}
-                    </button>
-                    <button
-                        className="px-3 py-1 border bg-gray-200 dark:bg-gray-700"
-                        onClick={() => {
-                            setPagination(prev => ({ ...prev, pageIndex: prev.pageIndex + 1 }));
-                            fetchVehicles(true);
-                        }}
-                        disabled={!lastVisible}
-                    >
-                        {'>'}
-                    </button>
-                    <button
-                        className="px-3 py-1 border rounded-r-md bg-gray-200 dark:bg-gray-700"
-                        onClick={() => {
-                            setPagination(prev => ({ ...prev, pageIndex: prev.pageIndex + 1 }));
-                            fetchVehicles(true);
-                        }}
-                        disabled={!lastVisible}
-                    >
-                        {'>>'}
-                    </button>
-                </div>
-
-                <span>
-                    Page{' '}
-                    <strong>
-                        {pagination.pageIndex + 1}
-                    </strong>
-                </span>
-
-                <select
-                    value={pagination.pageSize}
-                    onChange={e => setPagination(prev => ({ ...prev, pageSize: Number(e.target.value) }))}
-                    className="border rounded bg-gray-50 dark:bg-gray-700 dark:text-gray-300"
-                >
-                    {[10, 20, 30, 40, 50].map(size => (
-                        <option key={size} value={size}>
-                            Show {size}
-                        </option>
-                    ))}
-                </select>
+                {/* Pagination buttons here */}
             </div>
+
             <button
-                onClick={() => navigate('/cars/new')}
+                onClick={onAdd}
                 className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
-                Add new Car
+                Add New Item
             </button>
             <span>
                 {loading}
@@ -242,4 +171,4 @@ const VehicleList = () => {
     );
 };
 
-export default VehicleList;
+export default Table;

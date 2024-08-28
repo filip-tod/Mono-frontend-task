@@ -16,7 +16,6 @@ const EditCarPage = () => {
     const [makes, setMakes] = useState<IMake[]>([]);  // Stanje za listu "Makers"
     const navigate = useNavigate();
 
-    // 1. Dohvaćanje podataka o automobilu
     useEffect(() => {
         const fetchCar = async () => {
             try {
@@ -48,7 +47,6 @@ const EditCarPage = () => {
         fetchMakes();
     }, []);
 
-    // Rukovanje promjenama u formi
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setCar(prevCar => prevCar ? { ...prevCar, [name]: value } : null);
