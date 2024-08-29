@@ -45,7 +45,6 @@ const Table: React.FC<TableProps> = ({ endpoint, columnsConfig, onAdd, onEdit })
 
             if (dataArray.length > pagination.pageSize) {
                 setLastVisible(dataArray[pagination.pageSize - 1]);
-                dataArray.pop();
             } else {
                 setLastVisible(null);
             }
@@ -57,7 +56,7 @@ const Table: React.FC<TableProps> = ({ endpoint, columnsConfig, onAdd, onEdit })
         } finally {
             setLoading(false);
         }
-    }, [sorting, pagination.pageSize, lastVisible, endpoint]);
+    }, [sorting, pagination.pageSize, lastVisible, endpoint, pagination.pageIndex]);
 
     const handleDelete = async (id: string) => {
         try {
@@ -117,57 +116,117 @@ const Table: React.FC<TableProps> = ({ endpoint, columnsConfig, onAdd, onEdit })
     });
 
     return (
-        <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-            <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                {table.getHeaderGroups().map(headerGroup => (
-                    <tr key={headerGroup.id}>
-                        {headerGroup.headers.map(header => (
-                            <th key={header.id} className="px-6 py-3">
-                                {header.isPlaceholder ? null : (
-                                    <div
-                                        {...{
-                                            onClick: header.column.getToggleSortingHandler(),
-                                            style: { cursor: 'pointer' }
-                                        }}
-                                        className="flex items-center"
-                                    >
-                                        {flexRender(header.column.columnDef.header, header.getContext())}
-                                        {{ asc: ' 🔼', desc: ' 🔽' }[header.column.getIsSorted() as string] ?? null}
-                                    </div>
-                                )}
-                            </th>
-                        ))}
-                    </tr>
-                ))}
-                </thead>
-                <tbody>
-                {table.getRowModel().rows.map(row => (
-                    <tr key={row.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                        {row.getVisibleCells().map(cell => (
-                            <td key={cell.id} className="px-6 py-4">
-                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                            </td>
-                        ))}
-                    </tr>
-                ))}
-                </tbody>
-            </table>
+      <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+          <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+              {table.getHeaderGroups().map(headerGroup => (
+                <tr key={headerGroup.id}>
+                    {headerGroup.headers.map(header => (
+                      <th key={header.id} className="px-6 py-3">
+                          {header.isPlaceholder ? null : (
+                            <div
+                              {...{
+                                  onClick: header.column.getToggleSortingHandler(),
+                                  style: {cursor: 'pointer'}
+                              }}
+                              className="flex items-center"
+                            >
+                                {flexRender(header.column.columnDef.header, header.getContext())}
+                                {{asc: ' 🔼', desc: ' 🔽'}[header.column.getIsSorted() as string] ?? null}
+                            </div>
+                          )}
+                      </th>
+                    ))}
+                </tr>
+              ))}
+              </thead>
+              <tbody>
+              {table.getRowModel().rows.map(row => (
+                <tr key={row.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                    {row.getVisibleCells().map(cell => (
+                      <td key={cell.id} className="px-6 py-4">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                </tr>
+              ))}
+              </tbody>
+          </table>
 
-            <div className="pagination py-4 flex justify-between items-center">
-                {/* Pagination buttons here */}
-            </div>
+          <div className="pagination py-4 flex justify-between items-center">
+              <div>
+                  <button
+                    className="px-3 py-1 border rounded-l-md bg-gray-200 dark:bg-gray-700"
+                    onClick={() => {
+                        setPagination(prev => ({...prev, pageIndex: 0}));
+                        fetchData();
+                    }}
+                    disabled={pagination.pageIndex === 0}
+                  >
+                      {'<<'}
+                  </button>
+                  <button
+                    className="px-3 py-1 border bg-gray-200 dark:bg-gray-700"
+                    onClick={() => {
+                        setPagination(prev => ({...prev, pageIndex: Math.max(prev.pageIndex - 1, 0)}));
+                        fetchData(true);
+                    }}
+                    disabled={pagination.pageIndex === 0}
+                  >
+                      {'<'}
+                  </button>
+                  <button
+                    className="px-3 py-1 border bg-gray-200 dark:bg-gray-700"
+                    onClick={() => {
+                        setPagination(prev => ({...prev, pageIndex: prev.pageIndex + 1}));
+                        fetchData(true);
+                    }}
+                    disabled={!lastVisible}
+                  >
+                      {'>'}
+                  </button>
+                  <button
+                    className="px-3 py-1 border rounded-r-md bg-gray-200 dark:bg-gray-700"
+                    onClick={() => {
+                        setPagination(prev => ({...prev, pageIndex: prev.pageIndex + 1}));
+                        fetchData(true);
+                    }}
+                    disabled={!lastVisible}
+                  >
+                      {'>>'}
+                  </button>
+              </div>
 
-            <button
-                onClick={onAdd}
-                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
-                Add New Item
-            </button>
-            <span>
+              <span>
+                    Page{' '}
+                  <strong>
+                        {pagination.pageIndex + 1}
+                    </strong>
+                </span>
+
+              <select
+                value={pagination.pageSize}
+                onChange={e => setPagination(prev => ({...prev, pageSize: Number(e.target.value)}))}
+                className="border rounded bg-gray-50 dark:bg-gray-700 dark:text-gray-300"
+              >
+                  {[10, 20, 30, 40, 50].map(size => (
+                    <option key={size} value={size}>
+                        Show {size}
+                    </option>
+                  ))}
+              </select>
+          </div>
+
+          <button
+            onClick={onAdd}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+              Add New Item
+          </button>
+          <span>
                 {loading}
             </span>
-        </div>
+      </div>
     );
 };
 
