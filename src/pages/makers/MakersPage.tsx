@@ -1,14 +1,52 @@
-import VehicleList from "../../components/Table.tsx";
+import Table from "../../components/Table.tsx";
+import { useState } from "react";
+import { MakersModal } from "./components/MakersModal.tsx";
+import { useNavigate } from "react-router-dom";
 
-export const MakersPage = () =>{
-    return(
-        <div className={'h-80vh w-screen'}>
-            <h1>Makers Page</h1>
-            <p> updjetati citavu Table komponentu da prima propove, jedna ideja mi je da vozila za new i edit idu na
-                posebne stranice</p>
-            <p> a da ova stranica kada stisnem edit i new da mi se otvori modal </p>
-            <p>e sad treba razmisliti kako to napraviti a da ga ne zakompliciram jer imam hrpu ideja kak ovo zakomplicirat al radilo bi</p>
-            <VehicleList/>
+const columHeaders: any[] = [
+    { accessorKey: 'Id', header: 'ID' },
+    { accessorKey: 'Name', header: 'Name' },
+    { accessorKey: 'Abrv', header: 'Abrv' }
+];
+
+export const MakersPage = () => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editItemId, setEditItemId] = useState<string | null>(null);
+    const [refreshKey, setRefreshKey] = useState(0);
+    const navigate = useNavigate();
+
+    const openModalForAdd = () => {
+        setEditItemId(null);
+        setIsModalOpen(true);
+    };
+
+    const openModalForEdit = (id: string) => {
+        setEditItemId(id);
+        setIsModalOpen(true);
+    };
+
+    const handleSuccess = () => {
+        setIsModalOpen(false);
+        setRefreshKey(prevKey => prevKey + 1);
+        navigate('/cars/makers');
+    };
+
+    return (
+        <div className={'flex flex-col justify-center items-center h-80vh w-screen'}>
+            <Table
+                key={refreshKey}
+                endpoint="https://mono-react-app-default-rtdb.firebaseio.com/VehicleMakes.json"
+                columnsConfig={columHeaders}
+                onAdd={openModalForAdd}
+                onEdit={openModalForEdit}
+            />
+            <MakersModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                itemId={editItemId ?? undefined}
+                endpoint={("https://mono-react-app-default-rtdb.firebaseio.com/VehicleMakes")}
+                onSuccess={handleSuccess}
+            />
         </div>
     );
-}
+};

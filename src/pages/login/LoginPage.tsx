@@ -16,7 +16,9 @@ const LoginPage = observer(() => {
         await authStore.login(email, password);
 
         if (!authStore.authError) {
-            navigate('/home');
+            setTimeout(() => {
+                navigate('/home');
+            }, 1000);
         }
     };
 

@@ -25,7 +25,7 @@ class AuthStore {
             login: action,
             register: action,
             logout: action,
-            loginWithGoogle: action,  // Dodano
+            loginWithGoogle: action,
             setUser: action,
             setLoading: action,
             setAuthError: action,
@@ -39,6 +39,7 @@ class AuthStore {
             runInAction(() => {
                 this.user = user;
                 this.loading = false;
+                console.log("User state changed: ", user);
             });
         });
     }
