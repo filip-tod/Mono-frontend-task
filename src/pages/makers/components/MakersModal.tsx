@@ -1,61 +1,86 @@
-import { useState, useEffect } from "react";
+import {observer} from "mobx-react-lite";
+import {IModalProps} from "../../../interfaces/IModalProps.ts";
+import {useEffect} from "react";
+import {vehicleMakersFormStore} from "../../../stores/VehicleMakersFormStore .ts";
 import axios from "axios";
-import { IModalProps } from "../../../interfaces/IModalProps";
 
-export const MakersModal = ({ isOpen, onClose, itemId, endpoint, onSuccess }: IModalProps) => {
-    const [formData, setFormData] = useState({ Name: '', Abrv: '' });
-    const [error, setError] = useState<string | null>(null);
+export const MakersModal = observer(({ isOpen, onClose, itemId, endpoint, onSuccess }: IModalProps) => {
 
-    useEffect(() => {
+  const fetchData = async () => {
+    if (itemId) {
+      try {
+        const response = await axios.get(`${endpoint}/${itemId}.json`);
+        vehicleMakersFormStore.setName(response.data.Name);
+        vehicleMakersFormStore.setAbrv(response.data.Abrv);
+      } catch (error) {
+        vehicleMakersFormStore.resetForm();
+        console.error("Error fetching data", error);
+      }
+    } else {
+      vehicleMakersFormStore.resetForm();
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [itemId, endpoint]);
+
+  const handleSubmit = async () => {
+    if (vehicleMakersFormStore.validate()) {
+      try {
         if (itemId) {
-            axios.get(`${endpoint}/${itemId}.json`).then(response => {
-                setFormData(response.data);
-            }).catch(error => {
-                setError("Error fetching data");
-                console.error(error);
-            });
+          await axios.put(`${endpoint}/${itemId}.json`, {
+            Name: vehicleMakersFormStore.Name,
+            Abrv: vehicleMakersFormStore.Abrv,
+          });
         } else {
-            setFormData({ Name: '', Abrv: '' });
+          const response = await axios.post(`${endpoint}.json`, {
+            Name: vehicleMakersFormStore.Name,
+            Abrv: vehicleMakersFormStore.Abrv,
+          });
+          const newId = response.data.name;
+          await axios.patch(`${endpoint}/${newId}.json`, { Id: newId });
         }
-    }, [itemId, endpoint]);
+        onSuccess();
+        onClose();
+      } catch (error) {
+        vehicleMakersFormStore.setError("Name", "Error saving data");
+        console.error(error);
+      }
+    }
+  };
 
-    const handleSubmit = async () => {
-        try {
-            if (itemId) {
-                await axios.put(`${endpoint}/${itemId}.json`, formData);
-            } else {
-                const response = await axios.post(`${endpoint}.json`, formData);
-                const newId = response.data.name; // Firebase returns the new ID here
-                await axios.patch(`${endpoint}/${newId}.json`, { Id: newId });
-            }
-            onSuccess();
-            onClose();
-        } catch (error) {
-            setError("Error saving data");
-            console.error(error);
-        }
-    };
+  if (!isOpen) return null;
 
-    return (
-        <div className={`modal ${isOpen ? 'open' : ''}`}>
-            <div className="modal-content">
-                <h2>{itemId ? 'Edit' : 'Add'} Item</h2>
-                {error && <p className="error">{error}</p>}
-                <input
-                    type="text"
-                    placeholder="Name"
-                    value={formData.Name}
-                    onChange={(e) => setFormData({ ...formData, Name: e.target.value })}
-                />
-                <input
-                    type="text"
-                    placeholder="Abrv"
-                    value={formData.Abrv}
-                    onChange={(e) => setFormData({ ...formData, Abrv: e.target.value })}
-                />
-                <button onClick={handleSubmit}>{itemId ? 'Update' : 'Create'}</button>
-                <button onClick={onClose}>Cancel</button>
-            </div>
+  return (
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60">
+      <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h2 className="text-xl font-semibold mb-4">{itemId ? 'Edit' : 'Add'} Vehicle Maker</h2>
+        {vehicleMakersFormStore.errors.Name && <p className="text-red-500 mb-4">{vehicleMakersFormStore.errors.Name}</p>}
+        <input
+          type="text"
+          placeholder="Name"
+          value={vehicleMakersFormStore.Name}
+          onChange={(e) => vehicleMakersFormStore.setName(e.target.value)}
+          className="w-full mb-4 p-2 border border-gray-300 rounded"
+        />
+        <input
+          type="text"
+          placeholder="Abrv"
+          value={vehicleMakersFormStore.Abrv}
+          onChange={(e) => vehicleMakersFormStore.setAbrv(e.target.value)}
+          className="w-full mb-4 p-2 border border-gray-300 rounded"
+        />
+        <div className="flex justify-end space-x-2">
+          <button onClick={handleSubmit}
+                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            {itemId ? 'Update' : 'Create'}
+          </button>
+          <button onClick={onClose} className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+            Cancel
+          </button>
         </div>
-    );
-};
+      </div>
+    </div>
+  );
+});

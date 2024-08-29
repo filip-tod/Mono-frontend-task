@@ -3,6 +3,12 @@ import { useState } from "react";
 import { MakersModal } from "./components/MakersModal.tsx";
 import { useNavigate } from "react-router-dom";
 
+const columHeaders: any[] = [
+    { accessorKey: 'Id', header: 'ID' },
+    { accessorKey: 'Name', header: 'Name' },
+    { accessorKey: 'Abrv', header: 'Abrv' }
+];
+
 export const MakersPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editItemId, setEditItemId] = useState<string | null>(null);
@@ -22,7 +28,7 @@ export const MakersPage = () => {
     const handleSuccess = () => {
         setIsModalOpen(false);
         setRefreshKey(prevKey => prevKey + 1);
-        navigate('/car/makers');
+        navigate('/cars/makers');
     };
 
     return (
@@ -30,11 +36,7 @@ export const MakersPage = () => {
             <Table
                 key={refreshKey}
                 endpoint="https://mono-react-app-default-rtdb.firebaseio.com/VehicleMakes.json"
-                columnsConfig={[
-                    { accessorKey: 'Id', header: 'ID' },
-                    { accessorKey: 'Name', header: 'Name' },
-                    { accessorKey: 'Abrv', header: 'Abrv' }
-                ]}
+                columnsConfig={columHeaders}
                 onAdd={openModalForAdd}
                 onEdit={openModalForEdit}
             />

@@ -61,7 +61,7 @@ const Table: React.FC<TableProps> = ({ endpoint, columnsConfig, onAdd, onEdit })
 
     const handleDelete = async (id: string) => {
         try {
-            await axios.delete(`${endpoint}/${id}.json`);
+            await axios.delete(`${endpoint}/${id}`);
             setData(prevData => prevData.filter(item => item.Id !== id));
         } catch (error) {
             console.error("Failed to delete item", error);

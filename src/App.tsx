@@ -8,15 +8,17 @@ import NavBar from "./components/NavBar.tsx";
 import Footer from "./components/Footer.tsx";
 import EditCarPage from "./pages/cars/EditCarPage.tsx";
 import {MakersPage} from "./pages/makers/MakersPage.tsx";
-
+import {AuthProvider} from "./utils/AuthContext.tsx";
 
 const App = observer(() => {
     if (authStore.loading) {
         return <div>Loading...</div>;
     }
 
+
     return (
         <>
+            <AuthProvider>
         <NavBar/>
         <Router>
             <Routes>
@@ -39,6 +41,7 @@ const App = observer(() => {
             </Routes>
         </Router>
             <Footer/>
+            </AuthProvider>
         </>
     );
 });

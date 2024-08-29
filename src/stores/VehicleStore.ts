@@ -54,7 +54,7 @@ class VehicleStore {
     }
 
     // Add a new VehicleMake to Realtime Database
-    async addVehicleMake(Name: string, Abrv: string) {
+    async addVehicleMake(Name: string, Abrv: string,) {
         const vehicleMakesRef = ref(db, 'VehicleMakes');
         const newMakeRef = push(vehicleMakesRef);
         await set(newMakeRef, { Name, Abrv });
