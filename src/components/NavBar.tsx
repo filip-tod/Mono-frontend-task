@@ -4,11 +4,10 @@ import { observer } from 'mobx-react-lite';
 import authStore from "../stores/AuthStore.ts";
 
 const navigation = [
-    { name: 'Home', href: '/home', current: true },
-    { name: 'Vehicle List', href: '/home', current: false },
+    { name: 'Home', href: '/home', current: false },
+    { name: 'Vehicle List', href: '/cars', current: false },
     { name: 'Add New Car', href: '/cars/new', current: false },
     { name: 'Car Makers', href: '/cars/makers', current: false },
-
 ]
 
 function classNames(...classes: any) {
