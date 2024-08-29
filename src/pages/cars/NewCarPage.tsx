@@ -46,7 +46,14 @@ export const NewCarPage = observer(() => {
 
     return (
         <div className={'w-screen h-80vh'}>
-            <h1>New Car</h1>
+            <h1 className={'text-xl'}>Create A New Car</h1>
+            <h2>What do you need to do?</h2>
+            <ol>
+                <li>1.Type In A Car Name</li>
+                <li>2.Select A Car Maker</li>
+                <li>3.Select a Abbreviation for that Car</li>
+                <li>4.Submit the form</li>
+            </ol>
             <form onSubmit={handleSubmit} className="max-w-lg mx-auto">
                 <div className="mb-4">
                     <label className="block text-gray-700">Name</label>

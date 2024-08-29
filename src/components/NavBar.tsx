@@ -2,12 +2,14 @@ import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuIt
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { observer } from 'mobx-react-lite';
 import authStore from "../stores/AuthStore.ts";
+import CarIcon from '../../public/car-favicon.svg';
 
 const navigation = [
     { name: 'Home', href: '/home', current: false },
+    { name: 'Car Makers', href: '/cars/makers', current: false },
     { name: 'Vehicle List', href: '/cars', current: false },
     { name: 'Add New Car', href: '/cars/new', current: false },
-    { name: 'Car Makers', href: '/cars/makers', current: false },
+
 ]
 
 function classNames(...classes: any) {
@@ -36,7 +38,7 @@ const NavBar = observer(() => {
                         <div className="flex flex-shrink-0 items-center">
                             <img
                                 alt="Your Company"
-                                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
+                                src={CarIcon}
                                 className="h-8 w-auto"
                             />
                         </div>
