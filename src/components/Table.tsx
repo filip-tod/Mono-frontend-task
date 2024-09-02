@@ -1,233 +1,183 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import axios from 'axios';
 import {
-    useReactTable,
-    getCoreRowModel,
-    getSortedRowModel,
-    getPaginationRowModel,
-    flexRender,
-    Row,
-    SortingState,
-    PaginationState,
-} from '@tanstack/react-table';
-import axios from "axios";
+  Table as LibraryTable,
+  Header,
+  HeaderRow,
+  HeaderCell,
+  Body,
+  Row,
+  Cell,
+  useCustom,
+} from '@table-library/react-table-library/table';
+import { usePagination } from '@table-library/react-table-library/pagination';
+
+const BASE_URL = 'https://mono-react-app-default-rtdb.firebaseio.com';
 
 interface TableProps {
-    endpoint: string;
-    columnsConfig: any[];
-    onAdd: () => void;
-    onEdit: (id: string) => void;
+  endpoint: string;
+  columns: Array<{ accessorKey: string; header: string }>;
+  onAdd?: () => void;
+  onEdit?: (id: string) => void;
 }
 
-const Table: React.FC<TableProps> = ({ endpoint, columnsConfig, onAdd, onEdit }) => {
-    const [data, setData] = useState<any[]>([]);
-    const [lastVisible, setLastVisible] = useState<any | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [sorting, setSorting] = useState<SortingState>([]);
-    const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: 10 });
+interface DataNode {
+  [key: string]: any;
+  id: string;
+}
 
-    const fetchData = useCallback(async (isNextPage = false) => {
-        setLoading(true);
+interface FetchParams {
+  search: string;
+  filter: boolean;
+  page?: number;
+}
 
-        try {
-            const sortKey = (sorting[0]?.id || 'Name');
-            let query = `${endpoint}?orderBy="${sortKey}"&limitToFirst=${pagination.pageSize + 1}`;
+const Table: React.FC<TableProps> = ({ endpoint, columns, onAdd, onEdit }) => {
+  const [data, setData] = useState<{ nodes: DataNode[]; totalPages: number }>({
+    nodes: [],
+    totalPages: 0,
+  });
+  const [search, setSearch] = useState<string>('');
+  const [filter, setFilter] = useState<boolean>(false);
+  const timeout = useRef<NodeJS.Timeout | null>(null);
 
-            if (isNextPage && lastVisible) {
-                query += `&startAt="${lastVisible[sortKey]}"`;
-            }
+  const fetchData = useCallback(
+    async (params: FetchParams) => {
+      let url = `${BASE_URL}/${endpoint}.json`;
 
-            const response = await axios.get(query);
+      if (params.search) {
+        url += `?search=${params.search}`;
+      }
+      if (params.filter) {
+        url += `${params.search ? '&' : '?'}filter=${params.filter}`;
+      }
+      if (params.page !== undefined) {
+        url += `${params.search || params.filter ? '&' : '?'}page=${params.page}`;
+      }
 
-            const dataArray = Object.keys(response.data).map(key => ({
-                ...response.data[key],
-                Id: key,
-            }));
+      const result = await axios.get(url);
 
-            if (dataArray.length > pagination.pageSize) {
-                setLastVisible(dataArray[pagination.pageSize - 1]);
-            } else {
-                setLastVisible(null);
-            }
+      const dataArray: DataNode[] = result.data
+        ? Object.entries(result.data).map(([key, value]) => {
+          // Provjerimo je li `value` objekt
+          if (typeof value === 'object' && value !== null) {
+            return { ...value, id: key };
+          }
+          return { id: key }; // Osiguramo da uvijek vratimo objekt s 'id'
+        })
+        : [];
 
-            setData(dataArray);
+      setData({
+        nodes: dataArray,
+        totalPages: Math.ceil(dataArray.length / 10),
+      });
+    },
+    [endpoint]
+  );
 
-        } catch (error) {
-            console.error("Failed to fetch data", error);
-        } finally {
-            setLoading(false);
-        }
-    }, [sorting, pagination.pageSize, lastVisible, endpoint, pagination.pageIndex]);
+  useEffect(() => {
+    fetchData({ search, filter });
+  }, [fetchData, search, filter]);
 
-    const handleDelete = async (id: string) => {
-        try {
-            await axios.delete(`${endpoint}/${id}`);
-            setData(prevData => prevData.filter(item => item.Id !== id));
-        } catch (error) {
-            console.error("Failed to delete item", error);
-        }
-    };
+  const pagination = usePagination(
+    data,
+    {
+      state: {
+        page: 0, // Početna stranica
+      },
+      onChange: (_, state) => fetchData({ search, filter, page: state.page }),
+    },
+    {
+      isServer: true,
+    }
+  );
 
-    useEffect(() => {
-        fetchData();
-    }, [pagination]);
+  useCustom('search', data, {
+    state: { search },
+    onChange: (_, state) => {
+      if (timeout.current) clearTimeout(timeout.current);
 
-    const columns = useMemo(
-        () => [
-            ...columnsConfig,
-            {
-                id: 'actions',
-                header: 'Actions',
-                cell: ({ row }: { row: Row<any> }) => (
-                    <div className="flex space-x-2">
-                        <button
-                            onClick={() => onEdit(row.original.Id)}
-                            className="px-2 py-1 text-white bg-blue-500 rounded hover:bg-blue-600"
-                        >
-                            Edit
-                        </button>
-                        <button
-                            onClick={() => handleDelete(row.original.Id)}
-                            className="px-2 py-1 text-white bg-red-500 rounded hover:bg-red-600"
-                        >
-                            Delete
-                        </button>
-                    </div>
-                ),
-            },
-        ],
-        [onEdit]
-    );
+      timeout.current = setTimeout(() => {
+        fetchData({ search: state.search, filter, page: pagination.state.page });
+      }, 500);
+    },
+  });
 
-    const table = useReactTable({
-        data,
-        columns,
-        getCoreRowModel: getCoreRowModel(),
-        getSortedRowModel: getSortedRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        manualPagination: true,
-        manualSorting: true,
-        pageCount: -1,
-        state: {
-            pagination,
-            sorting,
-        },
-        onPaginationChange: setPagination,
-        onSortingChange: setSorting,
-    });
+  useCustom('filter', data, {
+    state: { filter },
+    onChange: (_, state) => fetchData({ search, filter: state.filter, page: pagination.state.page }),
+  });
 
-    return (
-      <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-          <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-              <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-              {table.getHeaderGroups().map(headerGroup => (
-                <tr key={headerGroup.id}>
-                    {headerGroup.headers.map(header => (
-                      <th key={header.id} className="px-6 py-3">
-                          {header.isPlaceholder ? null : (
-                            <div
-                              {...{
-                                  onClick: header.column.getToggleSortingHandler(),
-                                  style: {cursor: 'pointer'}
-                              }}
-                              className="flex items-center"
-                            >
-                                {flexRender(header.column.columnDef.header, header.getContext())}
-                                {{asc: ' 🔼', desc: ' 🔽'}[header.column.getIsSorted() as string] ?? null}
-                            </div>
-                          )}
-                      </th>
-                    ))}
-                </tr>
-              ))}
-              </thead>
-              <tbody>
-              {table.getRowModel().rows.map(row => (
-                <tr key={row.id} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                    {row.getVisibleCells().map(cell => (
-                      <td key={cell.id} className="px-6 py-4">
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </td>
-                    ))}
-                </tr>
-              ))}
-              </tbody>
-          </table>
+  return (
+    <div>
+      <div>
+        <label htmlFor="search">
+          Search:
+          <input
+            id="search"
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </label>
 
-          <div className="pagination py-4 flex justify-between items-center">
-              <div>
-                  <button
-                    className="px-3 py-1 border rounded-l-md bg-gray-200 dark:bg-gray-700"
-                    onClick={() => {
-                        setPagination(prev => ({...prev, pageIndex: 0}));
-                        fetchData();
-                    }}
-                    disabled={pagination.pageIndex === 0}
-                  >
-                      {'<<'}
-                  </button>
-                  <button
-                    className="px-3 py-1 border bg-gray-200 dark:bg-gray-700"
-                    onClick={() => {
-                        setPagination(prev => ({...prev, pageIndex: Math.max(prev.pageIndex - 1, 0)}));
-                        fetchData(true);
-                    }}
-                    disabled={pagination.pageIndex === 0}
-                  >
-                      {'<'}
-                  </button>
-                  <button
-                    className="px-3 py-1 border bg-gray-200 dark:bg-gray-700"
-                    onClick={() => {
-                        setPagination(prev => ({...prev, pageIndex: prev.pageIndex + 1}));
-                        fetchData(true);
-                    }}
-                    disabled={!lastVisible}
-                  >
-                      {'>'}
-                  </button>
-                  <button
-                    className="px-3 py-1 border rounded-r-md bg-gray-200 dark:bg-gray-700"
-                    onClick={() => {
-                        setPagination(prev => ({...prev, pageIndex: prev.pageIndex + 1}));
-                        fetchData(true);
-                    }}
-                    disabled={!lastVisible}
-                  >
-                      {'>>'}
-                  </button>
-              </div>
-
-              <span>
-                    Page{' '}
-                  <strong>
-                        {pagination.pageIndex + 1}
-                    </strong>
-                </span>
-
-              <select
-                value={pagination.pageSize}
-                onChange={e => setPagination(prev => ({...prev, pageSize: Number(e.target.value)}))}
-                className="border rounded bg-gray-50 dark:bg-gray-700 dark:text-gray-300"
-              >
-                  {[10, 20, 30, 40, 50].map(size => (
-                    <option key={size} value={size}>
-                        Show {size}
-                    </option>
-                  ))}
-              </select>
-          </div>
-
-          <button
-            onClick={onAdd}
-            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-              Add New Item
-          </button>
-          <span>
-                {loading}
-            </span>
+        <label htmlFor="filter">
+          <input
+            id="filter"
+            type="checkbox"
+            checked={filter}
+            onChange={(e) => setFilter(e.target.checked)}
+          />
+          Only "Ask HN"
+        </label>
       </div>
-    );
+
+      <LibraryTable data={data.nodes} pagination={pagination}>
+        {(tableList : any) => (
+          <>
+            <Header>
+              <HeaderRow>
+                {columns.map(({ header }) => (
+                  <HeaderCell key={header}>{header}</HeaderCell>
+                ))}
+              </HeaderRow>
+            </Header>
+
+            <Body>
+              {tableList.map((item : any) => (
+                <Row key={item.id} item={item} onClick={() => onEdit && onEdit(item.id)}>
+                  {columns.map(({ accessorKey }) => (
+                    <Cell key={accessorKey}>{item[accessorKey]}</Cell>
+                  ))}
+                </Row>
+              ))}
+            </Body>
+          </>
+        )}
+      </LibraryTable>
+
+      {onAdd && <button onClick={onAdd}>Add New</button>}
+
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <span>Total Pages: {data.totalPages}</span>
+        <span>
+          Page:{' '}
+          {Array.from({ length: data.totalPages }, (_, index) => (
+            <button
+              key={index}
+              type="button"
+              style={{
+                fontWeight: pagination.state.page === index ? 'bold' : 'normal',
+              }}
+              onClick={() => pagination.fns.onSetPage(index)}
+            >
+              {index + 1}
+            </button>
+          ))}
+        </span>
+      </div>
+    </div>
+  );
 };
 
 export default Table;

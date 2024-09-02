@@ -37,7 +37,7 @@ export const NewCarPage = observer(() => {
                     Abrv: vehicleFormStore.Abrv,
                 });
                 vehicleFormStore.resetForm();
-                navigate('/home');
+                navigate('/cars');
             } catch (error) {
                 console.error("Failed to add vehicle", error);
             }

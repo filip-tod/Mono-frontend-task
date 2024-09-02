@@ -1,19 +1,10 @@
-import Table from "../../components/Table.tsx";
-import { useState } from "react";
-import { MakersModal } from "./components/MakersModal.tsx";
-import { useNavigate } from "react-router-dom";
-
-const columHeaders: any[] = [
-    { accessorKey: 'Id', header: 'ID' },
-    { accessorKey: 'Name', header: 'Name' },
-    { accessorKey: 'Abrv', header: 'Abrv' }
-];
+import  { useState } from 'react';
+import { MakersModal } from "./components/MakersModal";
+import VehicleTable from "../../components/VheicleTable.tsx";
 
 export const MakersPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editItemId, setEditItemId] = useState<string | null>(null);
-    const [refreshKey, setRefreshKey] = useState(0);
-    const navigate = useNavigate();
 
     const openModalForAdd = () => {
         setEditItemId(null);
@@ -27,26 +18,25 @@ export const MakersPage = () => {
 
     const handleSuccess = () => {
         setIsModalOpen(false);
-        setRefreshKey(prevKey => prevKey + 1);
-        navigate('/cars/makers');
     };
 
     return (
-        <div className={'flex flex-col justify-center items-center h-80vh w-screen'}>
-            <Table
-                key={refreshKey}
-                endpoint="https://mono-react-app-default-rtdb.firebaseio.com/VehicleMakes.json"
-                columnsConfig={columHeaders}
-                onAdd={openModalForAdd}
-                onEdit={openModalForEdit}
-            />
-            <MakersModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                itemId={editItemId ?? undefined}
-                endpoint={("https://mono-react-app-default-rtdb.firebaseio.com/VehicleMakes")}
-                onSuccess={handleSuccess}
-            />
-        </div>
+      <div className="flex flex-col justify-center items-center h-80vh w-screen">
+
+
+        <VehicleTable
+          type={'makes'}
+          onEdit={openModalForEdit}
+          onCreate={openModalForAdd}
+        />
+
+          <MakersModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            itemId={editItemId ?? undefined}
+            endpoint="https://mono-react-app-default-rtdb.firebaseio.com/VehicleMakes"
+            onSuccess={handleSuccess}
+          />
+      </div>
     );
 };

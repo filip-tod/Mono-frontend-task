@@ -39,7 +39,7 @@ class AuthStore {
             runInAction(() => {
                 this.user = user;
                 this.loading = false;
-                console.log("User state changed: ", user);
+               /* console.log("User state changed: ", user);*/
             });
         });
     }
