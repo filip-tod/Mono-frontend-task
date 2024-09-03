@@ -15,6 +15,7 @@ class VehicleModelsStore {
       loading: observable,
       currentPage: observable,
       lastVisible: observable,
+      pageSize: observable,
       fetchVehicleModels: action,
       setVehicleModels: action,
       createVehicleModel: action,
@@ -22,6 +23,7 @@ class VehicleModelsStore {
       deleteVehicleModel: action,
       nextPage: action,
       prevPage: action,
+      setPageSize: action,
     });
   }
 
@@ -55,6 +57,13 @@ class VehicleModelsStore {
 
   setVehicleModels = (models: IVehicleModel[]) => {
     this.vehicleModels = models;
+  };
+
+  setPageSize = (size: number) => {
+    this.pageSize = size;
+    this.currentPage = 1; // Resetiraj na prvu stranicu pri promjeni veličine stranice
+    this.lastVisible = null;
+    this.fetchVehicleModels();
   };
 
   createVehicleModel = async (model: IVehicleModel) => {

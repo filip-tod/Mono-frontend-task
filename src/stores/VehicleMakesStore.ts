@@ -15,6 +15,7 @@ class VehicleMakesStore {
       loading: observable,
       currentPage: observable,
       lastVisible: observable,
+      pageSize: observable,
       fetchVehicleMakes: action,
       setVehicleMakes: action,
       createVehicleMake: action,
@@ -22,6 +23,7 @@ class VehicleMakesStore {
       deleteVehicleMake: action,
       nextPage: action,
       prevPage: action,
+      setPageSize: action,
     });
   }
 
@@ -35,7 +37,6 @@ class VehicleMakesStore {
       const response = await axios.get(url);
       const dataKeys = Object.keys(response.data);
 
-      // Ako imamo više od pageSize, to znači da postoji još zapisa
       const data: IVehicleMake[] = dataKeys.slice(0, this.pageSize).map((key) => ({
         ...response.data[key],
         Id: key,
@@ -44,7 +45,7 @@ class VehicleMakesStore {
       runInAction(() => {
         this.setVehicleMakes(data);
         this.loading = false;
-        this.lastVisible = dataKeys.length > this.pageSize ? dataKeys[this.pageSize] : null; // Postavi lastVisible na zadnji ključ
+        this.lastVisible = dataKeys.length > this.pageSize ? dataKeys[this.pageSize] : null;
       });
     } catch (error) {
       console.error("Failed to fetch vehicle makes", error);
@@ -56,6 +57,13 @@ class VehicleMakesStore {
 
   setVehicleMakes = (makes: IVehicleMake[]) => {
     this.vehicleMakes = makes;
+  };
+
+  setPageSize = (size: number) => {
+    this.pageSize = size;
+    this.currentPage = 1; // Resetiraj na prvu stranicu pri promjeni veličine stranice
+    this.lastVisible = null;
+    this.fetchVehicleMakes();
   };
 
   createVehicleMake = async (make: IVehicleMake) => {

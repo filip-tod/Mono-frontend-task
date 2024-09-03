@@ -1,8 +1,9 @@
 import React, { useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import vehicleMakesStore from "../stores/VehicleMakesStore";
+import { useNavigate } from "react-router-dom";
 import vehicleModelsStore from "../stores/VheicleModelStore.ts";
-import {useNavigate} from "react-router-dom";
+
 
 interface VehicleTableProps {
   type: "makes" | "models";
@@ -42,6 +43,11 @@ const VehicleTable: React.FC<VehicleTableProps> = observer(({ type, onEdit, onCr
     }
   };
 
+  const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSize = parseInt(event.target.value, 10);
+    store.setPageSize(newSize);
+  };
+
   const handleNextPage = () => {
     if (store.lastVisible) {
       store.nextPage();
@@ -58,13 +64,13 @@ const VehicleTable: React.FC<VehicleTableProps> = observer(({ type, onEdit, onCr
   const { vehicleModels } = vehicleModelsStore;
 
   return (
-    <div className="p-4">
+    <div className="mt-5 p-4 relative max-h-screen overflow-y-auto">
       <h1 className="text-xl font-bold mb-4">{type === "makes" ? "Vehicle Makes" : "Vehicle Models"}</h1>
       <button
         onClick={onCreate}
         className="mb-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
       >
-        Add New {type === "makes" ? "Make" : "Model"}
+        Add New {type === "makes" ? "Maker" : "Car Model"}
       </button>
       <table className="min-w-full bg-white border border-gray-200 shadow-md">
         <thead>
@@ -111,6 +117,17 @@ const VehicleTable: React.FC<VehicleTableProps> = observer(({ type, onEdit, onCr
           ))}
         </tbody>
       </table>
+      <div>
+        <select
+          value={store.pageSize}
+          onChange={handlePageSizeChange}
+          className="mt-1 p-2 w-full border rounded"
+        >
+          <option value={5}>5 records</option>
+          <option value={10}>10 records</option>
+          <option value={20}>20 records</option>
+        </select>
+      </div>
       <div className="flex justify-between items-center mt-4">
         <button
           onClick={handlePrevPage}
@@ -123,7 +140,7 @@ const VehicleTable: React.FC<VehicleTableProps> = observer(({ type, onEdit, onCr
         <button
           onClick={handleNextPage}
           disabled={!store.lastVisible}
-          className="px-4 py-2 bg-blue-500 text-white rounded"
+          className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
         >
           Next
         </button>

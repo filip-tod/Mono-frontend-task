@@ -35,7 +35,8 @@ const NavBar = observer(() => {
                         </DisclosureButton>
                     </div>
                     <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-                        <div className="flex flex-shrink-0 items-center">
+                        <div
+                          className="flex flex-shrink-0 items-center">
                             <img
                                 alt="Your Company"
                                 src={CarIcon}
