@@ -2,12 +2,13 @@ import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuIt
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { observer } from 'mobx-react-lite';
 import authStore from "../stores/AuthStore.ts";
+import CarIcon from '../../public/car-favicon.svg';
 
 const navigation = [
-    { name: 'Home', href: '/home', current: true },
-    { name: 'Vehicle List', href: '/home', current: false },
-    { name: 'Add New Car', href: '/cars/new', current: false },
+    { name: 'Home', href: '/home', current: false },
     { name: 'Car Makers', href: '/cars/makers', current: false },
+    { name: 'Vehicle Models', href: '/cars', current: false },
+    { name: 'Add New Car Model', href: '/cars/new', current: false },
 
 ]
 
@@ -34,10 +35,11 @@ const NavBar = observer(() => {
                         </DisclosureButton>
                     </div>
                     <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-                        <div className="flex flex-shrink-0 items-center">
+                        <div
+                          className="flex flex-shrink-0 items-center">
                             <img
                                 alt="Your Company"
-                                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
+                                src={CarIcon}
                                 className="h-8 w-auto"
                             />
                         </div>

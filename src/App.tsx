@@ -8,21 +8,34 @@ import NavBar from "./components/NavBar.tsx";
 import Footer from "./components/Footer.tsx";
 import EditCarPage from "./pages/cars/EditCarPage.tsx";
 import {MakersPage} from "./pages/makers/MakersPage.tsx";
-
+import {CarListPage} from "./pages/cars/CarListPage.tsx";
+import {AuthProvider} from "./utils/AuthContext.tsx";
 
 const App = observer(() => {
     if (authStore.loading) {
-        return <div>Loading...</div>;
+        return(
+          <div
+            className={'h-screen w-screen flex items-center justify-center'}
+          >
+             <h1 className={'text-blue-600'}>Loading...</h1>
+          </div>
+        );
     }
 
     return (
-        <>
+        <div className="flex justify-between flex-col h-screen w-screen">
+            <AuthProvider>
         <NavBar/>
         <Router>
             <Routes>
-                <Route path="/login" element={<LoginPage />} />
+                <Route path="/login" element=
+                    { !authStore.user ? <LoginPage /> : <Navigate to="/home" /> }
+                />
                 <Route path="/home" element={
                     authStore.user ? <HomePage /> : <Navigate to="/login" />
+                } />
+                <Route path="/cars" element={
+                    authStore.user ? <CarListPage /> : <Navigate to="/login" />
                 } />
                 <Route path="/cars/new" element={
                     authStore.user ? <NewCarPage /> : <Navigate to="/login" />
@@ -37,7 +50,8 @@ const App = observer(() => {
             </Routes>
         </Router>
             <Footer/>
-        </>
+            </AuthProvider>
+        </div>
     );
 });
 

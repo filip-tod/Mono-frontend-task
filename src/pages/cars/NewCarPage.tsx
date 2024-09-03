@@ -37,7 +37,7 @@ export const NewCarPage = observer(() => {
                     Abrv: vehicleFormStore.Abrv,
                 });
                 vehicleFormStore.resetForm();
-                navigate('/home');
+                navigate('/cars');
             } catch (error) {
                 console.error("Failed to add vehicle", error);
             }
@@ -45,64 +45,73 @@ export const NewCarPage = observer(() => {
     };
 
     return (
-        <div className={'w-screen h-80vh'}>
-            <h1>New Car</h1>
-            <form onSubmit={handleSubmit} className="max-w-lg mx-auto">
-                <div className="mb-4">
-                    <label className="block text-gray-700">Name</label>
-                    <input
+      <div className="flex flex-col items-center justify-center h-full min-h-screen p-4">
+          <div className="w-full max-w-lg p-6"> {/* Uklonjene specifične pozadinske boje */}
+              <h1 className="text-xl font-bold mb-4">Create A New Car</h1>
+              <h2 className="text-lg mb-2">What do you need to do?</h2>
+              <ol className="list-decimal list-inside mb-6">
+                  <li>Type In A Car Name</li>
+                  <li>Select A Car Maker</li>
+                  <li>Select a Abbreviation for that Car</li>
+                  <li>Submit the form</li>
+              </ol>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                      <label className="block">Name</label>
+                      <input
                         type="text"
                         value={vehicleFormStore.Name}
                         onChange={(e) => vehicleFormStore.setName(e.target.value)}
                         className="mt-1 p-2 w-full border rounded"
-                    />
-                    {vehicleFormStore.errors.Name && (
+                      />
+                      {vehicleFormStore.errors.Name && (
                         <p className="text-red-500 text-sm">{vehicleFormStore.errors.Name}</p>
-                    )}
-                </div>
+                      )}
+                  </div>
 
-                <div className="mb-4">
-                    <label className="block text-gray-700">Make</label>
-                    <select
+                  <div>
+                      <label className="block">Make</label>
+                      <select
                         value={vehicleFormStore.MakeId}
                         onChange={(e) => vehicleFormStore.setMakeId(e.target.value)}
                         className="mt-1 p-2 w-full border rounded"
-                    >
-                        <option value="">Select a Make</option>
-                        {makes.map((make) => (
+                      >
+                          <option value="">Select a Make</option>
+                          {makes.map((make) => (
                             <option
-                                key={make.Id}
-                                value={make.Id}
+                              key={make.Id}
+                              value={make.Id}
                             >
                                 {make.Name}
                             </option>
-                        ))}
-                    </select>
-                    {vehicleFormStore.errors.MakeId && (
+                          ))}
+                      </select>
+                      {vehicleFormStore.errors.MakeId && (
                         <p className="text-red-500 text-sm">{vehicleFormStore.errors.MakeId}</p>
-                    )}
-                </div>
+                      )}
+                  </div>
 
-                <div className="mb-4">
-                    <label className="block text-gray-700">Abbreviation</label>
-                    <input
+                  <div>
+                      <label className="block">Abbreviation</label>
+                      <input
                         type="text"
                         value={vehicleFormStore.Abrv}
                         onChange={(e) => vehicleFormStore.setAbrv(e.target.value)}
                         className="mt-1 p-2 w-full border rounded"
-                    />
-                    {vehicleFormStore.errors.Abrv && (
+                      />
+                      {vehicleFormStore.errors.Abrv && (
                         <p className="text-red-500 text-sm">{vehicleFormStore.errors.Abrv}</p>
-                    )}
-                </div>
+                      )}
+                  </div>
 
-                <button
+                  <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                    Submit
-                </button>
-            </form>
-        </div>
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 w-full"
+                  >
+                      Submit
+                  </button>
+              </form>
+          </div>
+      </div>
     );
 });
