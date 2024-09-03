@@ -1,9 +1,8 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { observer } from "mobx-react-lite";
 import vehicleMakesStore from "../stores/VehicleMakesStore";
 import { useNavigate } from "react-router-dom";
 import vehicleModelsStore from "../stores/VheicleModelStore.ts";
-
 
 interface VehicleTableProps {
   type: "makes" | "models";
@@ -15,6 +14,11 @@ const VehicleTable: React.FC<VehicleTableProps> = observer(({ type, onEdit, onCr
   const navigate = useNavigate();
   const store = type === "makes" ? vehicleMakesStore : vehicleModelsStore;
 
+  const [sortField, setSortField] = useState<string>("Name");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [filter, setFilter] = useState<string>("");
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     if (type === "makes") {
       vehicleMakesStore.fetchVehicleMakes();
@@ -23,9 +27,38 @@ const VehicleTable: React.FC<VehicleTableProps> = observer(({ type, onEdit, onCr
     }
   }, [type]);
 
-  if (store.loading) {
-    return <div>Loading...</div>;
-  }
+  useEffect(() => {
+    store.setSort(sortField, sortOrder);
+  }, [sortField, sortOrder, store]);
+
+  useEffect(() => {
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+
+    debounceTimeout.current = setTimeout(() => {
+      if (filter.length >= 3 || filter.length === 0) {
+        store.setFilter(filter);
+      }
+    }, 300);
+
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, [filter, store]);
+
+  const handleSort = (field: string) => {
+    const newOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
+    setSortField(field);
+    setSortOrder(newOrder);
+    store.setSort(field, newOrder);
+  };
+
+  const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setFilter(event.target.value);
+  };
 
   const handleEdit = (id: string) => {
     if (onEdit) {
@@ -60,6 +93,10 @@ const VehicleTable: React.FC<VehicleTableProps> = observer(({ type, onEdit, onCr
     }
   };
 
+  if (store.loading) {
+  console.log('ejuj')
+  }
+
   const { vehicleMakes } = vehicleMakesStore;
   const { vehicleModels } = vehicleModelsStore;
 
@@ -72,18 +109,40 @@ const VehicleTable: React.FC<VehicleTableProps> = observer(({ type, onEdit, onCr
       >
         Add New {type === "makes" ? "Maker" : "Car Model"}
       </button>
+      <input
+        type="text"
+        placeholder="Filter by name"
+        value={filter}
+        onChange={handleFilterChange}
+        className="mb-4 p-2 border rounded w-full"
+      />
       <table className="min-w-full bg-white border border-gray-200 shadow-md">
         <thead>
         <tr>
-          <th className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            ID
+          <th
+            onClick={() => handleSort("Id")}
+            className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+          >
+            ID {sortField === "Id" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
           </th>
-          <th className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Name
+          <th
+            onClick={() => handleSort("Name")}
+            className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+          >
+            Name {sortField === "Name" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
+          </th>
+          <th
+            onClick={() => handleSort("Abrv")}
+            className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+          >
+            Abrv {sortField === "Abrv" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
           </th>
           {type === "models" && (
-            <th className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Make ID
+            <th
+              onClick={() => handleSort("MakeId")}
+              className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+            >
+              Make ID {sortField === "MakeId" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
             </th>
           )}
           <th className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -97,6 +156,7 @@ const VehicleTable: React.FC<VehicleTableProps> = observer(({ type, onEdit, onCr
             <tr key={make.Id} className="hover:bg-gray-600 bg-gray-800">
               <td className="px-6 py-4 border-b border-gray-200">{make.Id}</td>
               <td className="px-6 py-4 border-b border-gray-200">{make.Name}</td>
+              <td className="px-6 py-4 border-b border-gray-200">{make.Abrv}</td>
               <td className="px-6 py-4 border-b border-gray-200">
                 <button onClick={() => handleEdit(make.Id)} className="text-blue-500 hover:text-blue-700 mr-2">Edit</button>
                 <button onClick={() => handleDelete(make.Id)} className="text-red-500 hover:text-red-700">Delete</button>
@@ -104,10 +164,11 @@ const VehicleTable: React.FC<VehicleTableProps> = observer(({ type, onEdit, onCr
             </tr>
           ))}
         {type === "models" &&
-          vehicleModels.map((model) => (
+          vehicleModels.map((model ) => (
             <tr key={model.Id} className="hover:bg-gray-600 bg-gray-800">
               <td className="px-6 py-4 border-b border-gray-200">{model.Id}</td>
               <td className="px-6 py-4 border-b border-gray-200">{model.Name}</td>
+              <td className="px-6 py-4 border-b border-gray-200">{model.Abrv}</td>
               <td className="px-6 py-4 border-b border-gray-200">{model.MakeId}</td>
               <td className="px-6 py-4 border-b border-gray-200">
                 <button onClick={() => handleEdit(model.Id)} className="text-blue-500 hover:text-blue-700 mr-2">Edit</button>

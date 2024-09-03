@@ -8,6 +8,9 @@ class VehicleMakesStore {
   currentPage = 1;
   pageSize = 5;
   lastVisible: string | null = null;
+  sortField = "Name";
+  sortOrder: "asc" | "desc" = "asc";
+  filter = "";
 
   constructor() {
     makeObservable(this, {
@@ -16,6 +19,9 @@ class VehicleMakesStore {
       currentPage: observable,
       lastVisible: observable,
       pageSize: observable,
+      sortField: observable,
+      sortOrder: observable,
+      filter: observable,
       fetchVehicleMakes: action,
       setVehicleMakes: action,
       createVehicleMake: action,
@@ -24,16 +30,25 @@ class VehicleMakesStore {
       nextPage: action,
       prevPage: action,
       setPageSize: action,
+      setSort: action,
+      setFilter: action,
     });
   }
 
   fetchVehicleMakes = async () => {
     this.loading = true;
     try {
-      let url = `https://mono-react-app-default-rtdb.firebaseio.com/VehicleMakes.json?orderBy="$key"&limitToFirst=${this.pageSize + 1}`;
+      let url = `https://mono-react-app-default-rtdb.firebaseio.com/VehicleMakes.json?orderBy="${this.sortField}"&limitToFirst=${this.pageSize + 1}`;
+      url += `&sort=${this.sortOrder}`;
+
+      if (this.filter) {
+        url += `&startAt="${this.filter}"&endAt="${this.filter}\uf8ff"`;
+      }
+
       if (this.lastVisible) {
         url += `&startAt="${this.lastVisible}"`;
       }
+
       const response = await axios.get(url);
       const dataKeys = Object.keys(response.data);
 
@@ -61,8 +76,19 @@ class VehicleMakesStore {
 
   setPageSize = (size: number) => {
     this.pageSize = size;
-    this.currentPage = 1; // Resetiraj na prvu stranicu pri promjeni veličine stranice
+    this.currentPage = 1;
     this.lastVisible = null;
+    this.fetchVehicleMakes();
+  };
+
+  setSort = (field: string, order: "asc" | "desc") => {
+    this.sortField = field;
+    this.sortOrder = order;
+    this.fetchVehicleMakes();
+  };
+
+  setFilter = (filter: string) => {
+    this.filter = filter;
     this.fetchVehicleMakes();
   };
 
@@ -103,7 +129,7 @@ class VehicleMakesStore {
   prevPage = () => {
     if (this.currentPage > 1) {
       this.currentPage -= 1;
-      this.lastVisible = null; // Resetiraj lastVisible
+      this.lastVisible = null;
       this.fetchVehicleMakes();
     }
   };
