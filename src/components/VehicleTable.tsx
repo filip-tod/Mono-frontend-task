@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { observer } from "mobx-react-lite";
 import vehicleMakesStore from "../stores/VehicleMakesStore";
 import { useNavigate } from "react-router-dom";
@@ -10,7 +10,7 @@ interface VehicleTableProps {
   onCreate?: () => void;
 }
 
-const VehicleTable: React.FC<VehicleTableProps> = observer(({ type, onEdit, onCreate }) => {
+const VehicleTable = observer(({ type, onEdit, onCreate }: VehicleTableProps) => {
   const navigate = useNavigate();
   const store = type === "makes" ? vehicleMakesStore : vehicleModelsStore;
 
@@ -94,18 +94,18 @@ const VehicleTable: React.FC<VehicleTableProps> = observer(({ type, onEdit, onCr
   };
 
   if (store.loading) {
-  console.log('ejuj')
+  console.log('loading')
   }
 
   const { vehicleMakes } = vehicleMakesStore;
   const { vehicleModels } = vehicleModelsStore;
 
   return (
-    <div className="mt-5 p-4 relative max-h-screen overflow-y-auto">
+    <div className="mt-5 p-4 relative max-h-screen">
       <h1 className="text-xl font-bold mb-4">{type === "makes" ? "Vehicle Makes" : "Vehicle Models"}</h1>
       <button
         onClick={onCreate}
-        className="mb-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+        className="mb-4 px-4 py-2 bg-blue-500 text-white hover:bg-blue-700"
       >
         Add New {type === "makes" ? "Maker" : "Car Model"}
       </button>
@@ -116,68 +116,70 @@ const VehicleTable: React.FC<VehicleTableProps> = observer(({ type, onEdit, onCr
         onChange={handleFilterChange}
         className="mb-4 p-2 border rounded w-full"
       />
-      <table className="min-w-full bg-white border border-gray-200 shadow-md">
-        <thead>
-        <tr>
-          <th
-            onClick={() => handleSort("Id")}
-            className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-          >
-            ID {sortField === "Id" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
-          </th>
-          <th
-            onClick={() => handleSort("Name")}
-            className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-          >
-            Name {sortField === "Name" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
-          </th>
-          <th
-            onClick={() => handleSort("Abrv")}
-            className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-          >
-            Abrv {sortField === "Abrv" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
-          </th>
-          {type === "models" && (
+      <div className="overflow-y-auto max-h-[500px]"> {/* Kontejner s y-scroll i maksimalnom visinom */}
+        <table className="min-w-full bg-white border border-gray-200 shadow-md">
+          <thead>
+          <tr>
             <th
-              onClick={() => handleSort("MakeId")}
+              onClick={() => handleSort("Id")}
               className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
             >
-              Make ID {sortField === "MakeId" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
+              ID {sortField === "Id" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
             </th>
-          )}
-          <th className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Actions
-          </th>
-        </tr>
-        </thead>
-        <tbody>
-        {type === "makes" &&
-          vehicleMakes.map((make) => (
-            <tr key={make.Id} className="hover:bg-gray-600 bg-gray-800">
-              <td className="px-6 py-4 border-b border-gray-200">{make.Id}</td>
-              <td className="px-6 py-4 border-b border-gray-200">{make.Name}</td>
-              <td className="px-6 py-4 border-b border-gray-200">{make.Abrv}</td>
-              <td className="px-6 py-4 border-b border-gray-200">
-                <button onClick={() => handleEdit(make.Id)} className="text-blue-500 hover:text-blue-700 mr-2">Edit</button>
-                <button onClick={() => handleDelete(make.Id)} className="text-red-500 hover:text-red-700">Delete</button>
-              </td>
-            </tr>
-          ))}
-        {type === "models" &&
-          vehicleModels.map((model ) => (
-            <tr key={model.Id} className="hover:bg-gray-600 bg-gray-800">
-              <td className="px-6 py-4 border-b border-gray-200">{model.Id}</td>
-              <td className="px-6 py-4 border-b border-gray-200">{model.Name}</td>
-              <td className="px-6 py-4 border-b border-gray-200">{model.Abrv}</td>
-              <td className="px-6 py-4 border-b border-gray-200">{model.MakeId}</td>
-              <td className="px-6 py-4 border-b border-gray-200">
-                <button onClick={() => handleEdit(model.Id)} className="text-blue-500 hover:text-blue-700 mr-2">Edit</button>
-                <button onClick={() => handleDelete(model.Id)} className="text-red-500 hover:text-red-700">Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+            <th
+              onClick={() => handleSort("Name")}
+              className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+            >
+              Name {sortField === "Name" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
+            </th>
+            <th
+              onClick={() => handleSort("Abrv")}
+              className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+            >
+              Abrv {sortField === "Abrv" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
+            </th>
+            {type === "models" && (
+              <th
+                onClick={() => handleSort("MakeId")}
+                className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+              >
+                Make ID {sortField === "MakeId" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
+              </th>
+            )}
+            <th className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Actions
+            </th>
+          </tr>
+          </thead>
+          <tbody>
+          {type === "makes" &&
+            vehicleMakes.map((make) => (
+              <tr key={make.Id} className="hover:bg-gray-600 bg-gray-800">
+                <td className="px-6 py-4 border-b border-gray-200">{make.Id}</td>
+                <td className="px-6 py-4 border-b border-gray-200">{make.Name}</td>
+                <td className="px-6 py-4 border-b border-gray-200">{make.Abrv}</td>
+                <td className="px-6 py-4 border-b border-gray-200">
+                  <button onClick={() => handleEdit(make.Id)} className="text-blue-500 hover:text-blue-700 mr-2">Edit</button>
+                  <button onClick={() => handleDelete(make.Id)} className="text-red-500 hover:text-red-700">Delete</button>
+                </td>
+              </tr>
+            ))}
+          {type === "models" &&
+            vehicleModels.map((model) => (
+              <tr key={model.Id} className="hover:bg-gray-600 bg-gray-800">
+                <td className="px-6 py-4 border-b border-gray-200">{model.Id}</td>
+                <td className="px-6 py-4 border-b border-gray-200">{model.Name}</td>
+                <td className="px-6 py-4 border-b border-gray-200">{model.Abrv}</td>
+                <td className="px-6 py-4 border-b border-gray-200">{model.MakeId}</td>
+                <td className="px-6 py-4 border-b border-gray-200">
+                  <button onClick={() => handleEdit(model.Id)} className="text-blue-500 hover:text-blue-700 mr-2">Edit</button>
+                  <button onClick={() => handleDelete(model.Id)} className="text-red-500 hover:text-red-700">Delete</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <div>
         <select
           value={store.pageSize}

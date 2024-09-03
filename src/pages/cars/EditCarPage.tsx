@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import {IVehicleModel} from "../../interfaces/IVehicleModel.ts";
-import {IVehicleMake} from "../../interfaces/IVehicleMake.ts";
-
+import { IVehicleModel } from "../../interfaces/IVehicleModel.ts";
+import { IVehicleMake } from "../../interfaces/IVehicleMake.ts";
 
 interface IMake {
     Id: string;
@@ -13,7 +12,7 @@ interface IMake {
 const EditCarPage = () => {
     const { id } = useParams<{ id: string }>();
     const [car, setCar] = useState<IVehicleModel | null>(null);
-    const [makes, setMakes] = useState<IMake[]>([]);  // Stanje za listu "Makers"
+    const [makes, setMakes] = useState<IMake[]>([]);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -58,67 +57,69 @@ const EditCarPage = () => {
 
         try {
             await axios.put(`https://mono-react-app-default-rtdb.firebaseio.com/VehicleModels/${id}.json`, car);
-            navigate('/home');
+            navigate('/cars');
         } catch (error) {
             console.error("Failed to update car.", error);
         }
     };
 
     if (!car) {
-        return <div>Loading...</div>;
+        return <div className="flex items-center justify-center h-screen">Loading...</div>;
     }
 
     return (
-        <div className="container mx-auto p-4">
-            <h2 className="text-2xl mb-4">Edit Car</h2>
-            <form onSubmit={handleSubmit}>
-                <div className="mb-4">
-                    <label htmlFor="Name" className="block text-sm font-medium text-gray-700">Name</label>
-                    <input
+      <div className="flex flex-col items-center justify-center h-full min-h-screen p-4">
+          <div className="w-full max-w-lg p-6"> {/* Ograničena širina za bolje prikazivanje na velikim ekranima */}
+              <h2 className="text-2xl font-bold mb-4">Edit Car</h2>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                      <label htmlFor="Name" className="block">Name</label>
+                      <input
                         type="text"
                         id="Name"
                         name="Name"
                         value={car.Name || ''}
                         onChange={handleInputChange}
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
-                    />
-                </div>
-                <div className="mb-4">
-                    <label htmlFor="Abrv" className="block text-sm font-medium text-gray-700">Abbreviation</label>
-                    <input
+                        className="mt-1 block w-full p-2 border rounded"
+                      />
+                  </div>
+                  <div>
+                      <label htmlFor="Abrv" className="block">Abbreviation</label>
+                      <input
                         type="text"
                         id="Abrv"
                         name="Abrv"
                         value={car.Abrv || ''}
                         onChange={handleInputChange}
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
-                    />
-                </div>
-                <div className="mb-4">
-                    <label htmlFor="MakeId" className="block text-sm font-medium text-gray-700">Make ID</label>
-                    <select
+                        className="mt-1 block w-full p-2 border rounded"
+                      />
+                  </div>
+                  <div>
+                      <label htmlFor="MakeId" className="block">Make ID</label>
+                      <select
                         id="MakeId"
                         name="MakeId"
                         value={car.MakeId || ''}
                         onChange={handleInputChange}
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
-                    >
-                        <option value="">Select a Maker</option>
-                        {makes.map(make => (
+                        className="mt-1 block w-full p-2 border rounded"
+                      >
+                          <option value="">Select a Maker</option>
+                          {makes.map(make => (
                             <option key={make.Id} value={make.Id}>
                                 {make.Name}
                             </option>
-                        ))}
-                    </select>
-                </div>
-                <button
+                          ))}
+                      </select>
+                  </div>
+                  <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                    Save Changes
-                </button>
-            </form>
-        </div>
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 w-full"
+                  >
+                      Save Changes
+                  </button>
+              </form>
+          </div>
+      </div>
     );
 };
 

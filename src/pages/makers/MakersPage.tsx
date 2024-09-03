@@ -1,6 +1,6 @@
 import  { useState } from 'react';
 import { MakersModal } from "./components/MakersModal";
-import VehicleTable from "../../components/VheicleTable.tsx";
+import VehicleTable from "../../components/VehicleTable.tsx";
 
 export const MakersPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -21,7 +21,8 @@ export const MakersPage = () => {
     };
 
     return (
-      <div className="flex flex-col justify-center items-center h-80vh w-screen">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-center h-full w-full p-4 overflow-y-auto">
+          <div className="w-full md:max-w-screen-md lg:max-w-screen-lg mx-auto">
 
 
         <VehicleTable
@@ -37,6 +38,7 @@ export const MakersPage = () => {
             endpoint="https://mono-react-app-default-rtdb.firebaseio.com/VehicleMakes"
             onSuccess={handleSuccess}
           />
+      </div>
       </div>
     );
 };
