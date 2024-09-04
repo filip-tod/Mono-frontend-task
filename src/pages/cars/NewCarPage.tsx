@@ -45,8 +45,8 @@ export const NewCarPage = observer(() => {
     };
 
     return (
-      <div className="flex flex-col items-center justify-center h-full min-h-screen p-4">
-          <div className="w-full max-w-lg p-6"> {/* Uklonjene specifične pozadinske boje */}
+      <div className="flex flex-col items-center justify-center   p-4">
+          <div className="w-full max-w-lg p-6">
               <h1 className="text-xl font-bold mb-4">Create A New Car</h1>
               <h2 className="text-lg mb-2">What do you need to do?</h2>
               <ol className="list-decimal list-inside mb-6">
