@@ -68,8 +68,8 @@ const EditCarPage = () => {
     }
 
     return (
-      <div className="flex flex-col items-center justify-center h-full min-h-screen p-4">
-          <div className="w-full max-w-lg p-6"> {/* Ograničena širina za bolje prikazivanje na velikim ekranima */}
+      <div className="flex flex-col items-center justify-center  p-4">
+          <div className="w-full max-w-lg p-6">
               <h2 className="text-2xl font-bold mb-4">Edit Car</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                   <div>

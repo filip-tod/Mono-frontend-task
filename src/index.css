@@ -35,8 +35,32 @@ body {
 }
 
 h1 {
-  font-size: 3.2em;
+  font-size: 3.2em; /* Approximately 51.2px */
   line-height: 1.1;
+}
+
+h2 {
+  font-size: 2.5em; /* Approximately 40px */
+  line-height: 1.2;
+  margin: 0.5em 0; /* Adds spacing above and below */
+}
+
+h3 {
+  font-size: 2em; /* Approximately 32px */
+  line-height: 1.3;
+  margin: 0.75em 0; /* Adds spacing above and below */
+}
+
+h4 {
+  font-size: 1.5em; /* Approximately 24px */
+  line-height: 1.4;
+  margin: 1em 0; /* Adds spacing above and below */
+}
+
+p {
+  font-size: 1em; /* Approximately 16px */
+  line-height: 1.5;
+  margin: 1em 0; /* Adds spacing above and below */
 }
 
 button {

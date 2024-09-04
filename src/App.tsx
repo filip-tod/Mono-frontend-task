@@ -8,8 +8,9 @@ import NavBar from "./components/NavBar.tsx";
 import Footer from "./components/Footer.tsx";
 import EditCarPage from "./pages/cars/EditCarPage.tsx";
 import {MakersPage} from "./pages/makers/MakersPage.tsx";
-import {CarListPage} from "./pages/cars/CarListPage.tsx";
 import {AuthProvider} from "./utils/AuthContext.tsx";
+import {CarListPage} from "./pages/cars/CarListPage.tsx";
+import {ProfilePage} from "./pages/profile/ProfilePage.tsx";
 
 const App = observer(() => {
     if (authStore.loading) {
@@ -23,10 +24,10 @@ const App = observer(() => {
     }
 
     return (
+      <Router>
+          <AuthProvider>
         <div className="flex justify-between flex-col h-screen w-screen">
-            <AuthProvider>
         <NavBar/>
-        <Router>
             <Routes>
                 <Route path="/login" element=
                     { !authStore.user ? <LoginPage /> : <Navigate to="/home" /> }
@@ -46,12 +47,16 @@ const App = observer(() => {
                 <Route path="/cars/makers/" element={
                     authStore.user ? <MakersPage /> : <Navigate to="/login" />
                 } />
+                <Route path="/profile" element={
+                    authStore.user ? <ProfilePage /> : <Navigate to="/login" />
+                } />
                 <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
-        </Router>
+
             <Footer/>
-            </AuthProvider>
-        </div>
+                 </div>
+          </AuthProvider>
+        </Router>
     );
 });
 
