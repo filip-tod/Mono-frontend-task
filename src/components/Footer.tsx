@@ -13,15 +13,17 @@ export default function Footer() {
                     <div className="text-sm">
                         © 2024 Filip Todorović.
                     </div>
-                    <div className="flex space-x-4">
-                        <a href="#" className="">
+                    <div  className="flex space-x-4">
+                        <a target="_blank" rel="noopener noreferrer" href="https://www.linkedin.com/in/filip-todorovi%C4%87-8189b9230/" className="">
                             <img
+                              className={"h-20 w-auto transition-transform transform hover:scale-150"}
                                 alt={'linkedIn icon'}
                                 src={LinkedIcon}
                             />
                         </a>
-                        <a href="#" className="">
+                        <a target="_blank" rel="noopener noreferrer" href="https://github.com/filip-tod" className="">
                             <img
+                              className={"h-20 w-auto transition-transform transform hover:scale-150"}
                                 alt={'github icon'}
                                 src={GithubIcon}
                             />

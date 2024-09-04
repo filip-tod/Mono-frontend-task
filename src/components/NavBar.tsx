@@ -1,13 +1,15 @@
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
-import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { observer } from 'mobx-react-lite';
 import authStore from "../stores/AuthStore.ts";
+import CarIcon from '../../public/car-favicon.svg';
+import {useLocation, useNavigate} from "react-router-dom";
 
 const navigation = [
-    { name: 'Home', href: '/home', current: true },
-    { name: 'Vehicle List', href: '/home', current: false },
-    { name: 'Add New Car', href: '/cars/new', current: false },
+    { name: 'Home', href: '/home', current: false },
     { name: 'Car Makers', href: '/cars/makers', current: false },
+    { name: 'Vehicle Models', href: '/cars', current: false },
+    { name: 'Add New Car Model', href: '/cars/new', current: false },
 
 ]
 
@@ -16,10 +18,17 @@ function classNames(...classes: any) {
 }
 
 const NavBar = observer(() => {
+    const navigate = useNavigate();
+    const location = useLocation();
 
     const handleLogout = () => {
         authStore.logout();
     };
+
+    const updatedNavigation = navigation.map(item => ({
+        ...item,
+        current: location.pathname === item.href,
+    }));
 
     return (
         <Disclosure as="nav" className="bg-gray-800">
@@ -34,17 +43,21 @@ const NavBar = observer(() => {
                         </DisclosureButton>
                     </div>
                     <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-                        <div className="flex flex-shrink-0 items-center">
+                        <div
+
+                          className="flex flex-shrink-0 items-center">
                             <img
-                                alt="Your Company"
-                                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
-                                className="h-8 w-auto"
+                                alt="Car Icon"
+                                src={CarIcon}
+                                className="h-8 w-auto cursor-pointer"
+                                style={{ filter: 'invert(50%) sepia(100%) saturate(500%) hue-rotate(180deg)' }}
+                                onClick={() => navigate('/home')}
                             />
                         </div>
                         {authStore.user ? (
                         <div className="hidden sm:ml-6 sm:block">
                             <div className="flex space-x-4">
-                                {navigation.map((item) => (
+                                {updatedNavigation.map((item) => (
                                     <a
                                         key={item.name}
                                         href={item.href}
@@ -65,14 +78,7 @@ const NavBar = observer(() => {
 
                     {authStore.user ? (
                         <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-                            <button
-                                type="button"
-                                className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
-                            >
-                                <span className="absolute -inset-1.5" />
-                                <span className="sr-only">View notifications</span>
-                                <BellIcon aria-hidden="true" className="h-6 w-6" />
-                            </button>
+
 
                             {/* Profile dropdown */}
                             <Menu as="div" className="relative ml-3">
@@ -88,26 +94,24 @@ const NavBar = observer(() => {
                                     </MenuButton>
                                 </div>
                                 <MenuItems
-                                    transition
-                                    className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-gray-200 py-1 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none"
+                                  transition
+                                  className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-gray-200 py-1 shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none"
                                 >
                                     <MenuItem>
-                                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100">
+                                        <a
+                                          onClick={() => navigate('/profile')}
+                                          className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 cursor-pointer"
+                                        >
                                             Your Profile
                                         </a>
                                     </MenuItem>
                                     <MenuItem>
-                                        <a href="#" className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100">
-                                            Settings
-                                        </a>
-                                    </MenuItem>
-                                    <MenuItem>
-                                        <button
-                                            onClick={handleLogout}
-                                            className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-100 focus:bg-gray-100"
+                                        <a
+                                          onClick={handleLogout}
+                                          className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 cursor-pointer"
                                         >
                                             Sign out
-                                        </button>
+                                        </a>
                                     </MenuItem>
                                 </MenuItems>
                             </Menu>
