@@ -35,11 +35,15 @@ class VehicleMakesStore {
     });
   }
 
-  fetchVehicleMakes = async () => {
+  fetchVehicleMakes = async (resetPaging: boolean = false) => {
     this.loading = true;
     try {
-      let url = `https://mono-react-app-default-rtdb.firebaseio.com/VehicleMakes.json?orderBy="${this.sortField}"&limitToFirst=${this.pageSize + 1}`;
-      url += `&sort=${this.sortOrder}`;
+      if (resetPaging) {
+        this.currentPage = 1;
+        this.lastVisible = null;
+      }
+
+      let url = `https://mono-react-app-default-rtdb.firebaseio.com/VehicleMakes.json?orderBy="Id"&limitToFirst=${this.pageSize + 1}`;
 
       if (this.filter) {
         url += `&startAt="${this.filter}"&endAt="${this.filter}\uf8ff"`;
@@ -60,7 +64,13 @@ class VehicleMakesStore {
       runInAction(() => {
         this.setVehicleMakes(data);
         this.loading = false;
-        this.lastVisible = dataKeys.length > this.pageSize ? dataKeys[this.pageSize] : null;
+
+
+        if (data.length < this.pageSize) {
+          this.lastVisible = null;
+        } else {
+          this.lastVisible = data[data.length - 1].Id;
+        }
       });
     } catch (error) {
       console.error("Failed to fetch vehicle makes", error);
@@ -81,15 +91,19 @@ class VehicleMakesStore {
     this.fetchVehicleMakes();
   };
 
-  setSort = (field: string, order: "asc" | "desc") => {
-    this.sortField = field;
-    this.sortOrder = order;
-    this.fetchVehicleMakes();
+  setFilter = (filter: string) => {
+    runInAction(() => {
+      this.filter = filter;
+    });
+    this.fetchVehicleMakes(true);
   };
 
-  setFilter = (filter: string) => {
-    this.filter = filter;
-    this.fetchVehicleMakes();
+  setSort = (field: string, order: "asc" | "desc") => {
+    runInAction(() => {
+      this.sortField = field;
+      this.sortOrder = order;
+    });
+    this.fetchVehicleMakes(true);
   };
 
   createVehicleMake = async (make: IVehicleMake) => {

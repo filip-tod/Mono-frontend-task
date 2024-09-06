@@ -1,6 +1,7 @@
-import  { useState } from 'react';
+import {useEffect, useState} from 'react';
 import { MakersModal } from "./components/MakersModal";
 import VehicleTable from "../../components/VehicleTable.tsx";
+import vehicleMakesStore from "../../stores/VehicleMakesStore.ts";
 
 export const MakersPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,6 +20,10 @@ export const MakersPage = () => {
     const handleSuccess = () => {
         setIsModalOpen(false);
     };
+
+  useEffect(() => {
+    vehicleMakesStore.fetchVehicleMakes();
+  }, []);
 
     return (
       <div className="flex flex-col md:flex-row md:items-center md:justify-center h-full w-full p-4 overflow-y-auto">

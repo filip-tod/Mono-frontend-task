@@ -8,7 +8,7 @@ import {useLocation, useNavigate} from "react-router-dom";
 const navigation = [
     { name: 'Home', href: '/home', current: false },
     { name: 'Car Makers', href: '/cars/makers', current: false },
-    { name: 'Vehicle Models', href: '/cars', current: false },
+    { name: 'Car Models', href: '/cars', current: false },
     { name: 'Add New Car Model', href: '/cars/new', current: false },
 
 ]

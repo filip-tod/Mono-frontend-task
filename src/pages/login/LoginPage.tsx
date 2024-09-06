@@ -8,7 +8,7 @@ import ServiceButton from "../../components/ServiceButton.tsx";
 const LoginPage = observer(() => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [showLoginInfo, setShowLoginInfo] = useState(false); // Dodano stanje za prikaz informacija
+    const [showLoginInfo, setShowLoginInfo] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {

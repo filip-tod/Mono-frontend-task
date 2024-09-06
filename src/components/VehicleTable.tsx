@@ -2,13 +2,18 @@ import { useEffect, useState, useRef } from "react";
 import { observer } from "mobx-react-lite";
 import vehicleMakesStore from "../stores/VehicleMakesStore";
 import { useNavigate } from "react-router-dom";
-import vehicleModelsStore from "../stores/VheicleModelStore.ts";
+import vehicleModelsStore from "../stores/VheicleModelStore";
+import { IVehicleMake } from "../interfaces/IVehicleMake";
+import { IVehicleModel } from "../interfaces/IVehicleModel";
 
 interface VehicleTableProps {
   type: "makes" | "models";
   onEdit?: (id: string) => void;
   onCreate?: () => void;
 }
+
+type VehicleMakeColumns = keyof IVehicleMake;
+type VehicleModelColumns = keyof IVehicleModel;
 
 const VehicleTable = observer(({ type, onEdit, onCreate }: VehicleTableProps) => {
   const navigate = useNavigate();
@@ -18,6 +23,9 @@ const VehicleTable = observer(({ type, onEdit, onCreate }: VehicleTableProps) =>
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [filter, setFilter] = useState<string>("");
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const columns: VehicleMakeColumns[] | VehicleModelColumns[] =
+    type === "makes" ? ["Id", "Name", "Abrv"] : ["Id", "Name", "MakeId", "Abrv"];
 
   useEffect(() => {
     if (type === "makes") {
@@ -94,15 +102,19 @@ const VehicleTable = observer(({ type, onEdit, onCreate }: VehicleTableProps) =>
   };
 
   if (store.loading) {
-  console.log('loading')
+    console.log("loading");
   }
 
   const { vehicleMakes } = vehicleMakesStore;
   const { vehicleModels } = vehicleModelsStore;
 
+  const data: IVehicleMake[] | IVehicleModel[] = type === "makes" ? vehicleMakes : vehicleModels;
+
   return (
     <div className="mt-5 p-4 relative max-h-screen">
-      <h1 className="text-xl font-bold mb-4">{type === "makes" ? "Vehicle Makes" : "Vehicle Models"}</h1>
+      <h1 className="text-xl font-bold mb-4">
+        {type === "makes" ? "Vehicle Makes" : "Vehicle Models"}
+      </h1>
       <button
         onClick={onCreate}
         className="mb-4 px-4 py-2 bg-blue-500 text-white hover:bg-blue-700"
@@ -111,72 +123,44 @@ const VehicleTable = observer(({ type, onEdit, onCreate }: VehicleTableProps) =>
       </button>
       <input
         type="text"
-        placeholder="Filter by name"
+        placeholder={type === "makes" ? "Filter By Id" : "Filter By Name"}
         value={filter}
         onChange={handleFilterChange}
         className="mb-4 p-2 border rounded w-full"
       />
-      <div className="overflow-y-auto max-h-[500px]"> {/* Kontejner s y-scroll i maksimalnom visinom */}
+      <div className="overflow-y-auto max-h-[500px]">
         <table className="min-w-full bg-white border border-gray-200 shadow-md">
           <thead>
           <tr>
-            <th
-              onClick={() => handleSort("Id")}
-              className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-            >
-              ID {sortField === "Id" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
-            </th>
-            <th
-              onClick={() => handleSort("Name")}
-              className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-            >
-              Name {sortField === "Name" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
-            </th>
-            <th
-              onClick={() => handleSort("Abrv")}
-              className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-            >
-              Abrv {sortField === "Abrv" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
-            </th>
-            {type === "models" && (
+            {columns.map((column) => (
               <th
-                onClick={() => handleSort("MakeId")}
-                className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                key={column}
+                onClick={() => handleSort(column as string)}
+                className="px-6 py-3 border-b border-gray-200 bg-gradient-to-r from-blue-500 to-purple-500 text-left text-xs font-medium text-black uppercase tracking-wider cursor-pointer"
               >
-                Make ID {sortField === "MakeId" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
+                {column} {sortField === column ? (sortOrder === "asc" ? "↑" : "↓") : ""}
               </th>
-            )}
-            <th className="px-6 py-3 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            ))}
+            <th className="px-6 py-3 border-b border-gray-200 bg-gradient-to-r from-blue-500 to-purple-500 text-left text-xs font-medium text-black uppercase tracking-wider cursor-pointer">
               Actions
             </th>
           </tr>
           </thead>
           <tbody>
-          {type === "makes" &&
-            vehicleMakes.map((make) => (
-              <tr key={make.Id} className="hover:bg-gray-600 bg-gray-800">
-                <td className="px-6 py-4 border-b border-gray-200">{make.Id}</td>
-                <td className="px-6 py-4 border-b border-gray-200">{make.Name}</td>
-                <td className="px-6 py-4 border-b border-gray-200">{make.Abrv}</td>
-                <td className="px-6 py-4 border-b border-gray-200">
-                  <button onClick={() => handleEdit(make.Id)} className="text-blue-500 hover:text-blue-700 mr-2">Edit</button>
-                  <button onClick={() => handleDelete(make.Id)} className="text-red-500 hover:text-red-700">Delete</button>
+          {data.map((item) => (
+            <tr key={item.Id} className="hover:bg-gray-600 bg-gray-800">
+              {columns.map((column) => (
+                <td key={column} className="px-6 py-4 border-b border-gray-200">
+                  {/* TypeScript sada zna koji su validni ključevi */}
+                  {item[column as keyof typeof item]}
                 </td>
-              </tr>
-            ))}
-          {type === "models" &&
-            vehicleModels.map((model) => (
-              <tr key={model.Id} className="hover:bg-gray-600 bg-gray-800">
-                <td className="px-6 py-4 border-b border-gray-200">{model.Id}</td>
-                <td className="px-6 py-4 border-b border-gray-200">{model.Name}</td>
-                <td className="px-6 py-4 border-b border-gray-200">{model.Abrv}</td>
-                <td className="px-6 py-4 border-b border-gray-200">{model.MakeId}</td>
-                <td className="px-6 py-4 border-b border-gray-200">
-                  <button onClick={() => handleEdit(model.Id)} className="text-blue-500 hover:text-blue-700 mr-2">Edit</button>
-                  <button onClick={() => handleDelete(model.Id)} className="text-red-500 hover:text-red-700">Delete</button>
-                </td>
-              </tr>
-            ))}
+              ))}
+              <td className="px-6 py-4 border-b border-gray-200">
+                <button onClick={() => handleEdit(item.Id)} className="text-blue-500 hover:text-blue-700 mr-2">Edit</button>
+                <button onClick={() => handleDelete(item.Id)} className="text-red-500 hover:text-red-700">Delete</button>
+              </td>
+            </tr>
+          ))}
           </tbody>
         </table>
       </div>
@@ -194,7 +178,7 @@ const VehicleTable = observer(({ type, onEdit, onCreate }: VehicleTableProps) =>
       <div className="flex justify-between items-center mt-4">
         <button
           onClick={handlePrevPage}
-          disabled={store.currentPage === 1}
+          disabled={store.currentPage === 1 || store.loading}
           className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
         >
           Previous
@@ -202,7 +186,7 @@ const VehicleTable = observer(({ type, onEdit, onCreate }: VehicleTableProps) =>
         <span>Page {store.currentPage}</span>
         <button
           onClick={handleNextPage}
-          disabled={!store.lastVisible}
+          disabled={!store.lastVisible || store.loading}
           className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
         >
           Next
