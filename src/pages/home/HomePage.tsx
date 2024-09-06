@@ -16,7 +16,7 @@ export const HomePage = () => {
             modification, and deletion of car brands and models in a structured way.
           </p>
           <p className={'mt-2 text-base'}>
-            In the Vehicle List section, you can see all the cars we have stored, each connected to a specific car maker.
+            In the Car Models section, you can see all the cars we have stored, each connected to a specific car maker.
             You can also navigate to the Car Makers section to add new brands (e.g., Ford, BMW) and associate car models with them.
           </p>
           <p className={'mt-2 text-base'}>
@@ -24,7 +24,7 @@ export const HomePage = () => {
             like adding car images, logos, and even a basic "shop" system where users can simulate buying and selling cars.
           </p>
           <p className={'mt-2 text-base'}>
-            Overall, this project is a way to show how React, MobX, and API integrations can be used to create a functional,
+            Overall, this project is a way to show how React, MobX, Tailwind CSS and API integrations can be used to create a functional,
             interactive user interface.
           </p>
         </div>

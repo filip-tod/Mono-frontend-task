@@ -19,7 +19,8 @@ const VehicleTable = observer(({ type, onEdit, onCreate }: VehicleTableProps) =>
   const navigate = useNavigate();
   const store = type === "makes" ? vehicleMakesStore : vehicleModelsStore;
 
-  const [sortField, setSortField] = useState<string>("Name");
+  // Default sortiranje je po "Name" za models, a po "Id" za makes
+  const [sortField, setSortField] = useState<string>(type === "makes" ? "Id" : "Name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [filter, setFilter] = useState<string>("");
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -58,10 +59,16 @@ const VehicleTable = observer(({ type, onEdit, onCreate }: VehicleTableProps) =>
   }, [filter, store]);
 
   const handleSort = (field: string) => {
-    const newOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
-    setSortField(field);
-    setSortOrder(newOrder);
-    store.setSort(field, newOrder);
+    // Ograničavamo sortiranje: samo po "Id" za makes i po "Name" za models
+    if (
+      (type === "makes" && field === "Id") ||
+      (type === "models" && field === "Name")
+    ) {
+      const newOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
+      setSortField(field);
+      setSortOrder(newOrder);
+      store.setSort(field, newOrder);
+    }
   };
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -151,7 +158,6 @@ const VehicleTable = observer(({ type, onEdit, onCreate }: VehicleTableProps) =>
             <tr key={item.Id} className="hover:bg-gray-600 bg-gray-800">
               {columns.map((column) => (
                 <td key={column} className="px-6 py-4 border-b border-gray-200">
-                  {/* TypeScript sada zna koji su validni ključevi */}
                   {item[column as keyof typeof item]}
                 </td>
               ))}
