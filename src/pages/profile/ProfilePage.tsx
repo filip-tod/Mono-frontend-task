@@ -4,7 +4,7 @@ export const ProfilePage = () => {
   const { user } = authStore;
 
   if (!user) {
-    return <div>Please log in to see your profile.</div>;  // Fallback
+    return <div>Please log in to see your profile.</div>;
   }
   console.log(user);
 

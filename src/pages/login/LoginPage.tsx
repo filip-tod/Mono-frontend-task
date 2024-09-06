@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useNavigate } from 'react-router-dom';
 import authStore from "../../stores/AuthStore.ts";
@@ -8,7 +8,7 @@ import ServiceButton from "../../components/ServiceButton.tsx";
 const LoginPage = observer(() => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [showLoginInfo, setShowLoginInfo] = useState(false); // Dodano stanje za prikaz informacija
+    const [showLoginInfo, setShowLoginInfo] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -32,7 +32,7 @@ const LoginPage = observer(() => {
 
     return (
       <div className="flex flex-col items-center justify-center min-h-screen w-screen pt-20 gap-6">
-          <div><h1>Car Shop App</h1></div>
+          <div><h1>Garage App</h1></div>
           <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-1 rounded-lg">
               <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-6 rounded-lg w-full max-w-md">
                   <h1 className="text-2xl font-bold text-center mb-4">Login</h1>
