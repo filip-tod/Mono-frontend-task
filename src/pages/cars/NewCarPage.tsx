@@ -1,43 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { observer } from 'mobx-react-lite';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { observer } from "mobx-react-lite";
+import { useNavigate } from "react-router-dom";
 import { vehicleFormStore } from "../../stores/VehicleFormStore.ts";
-import { IVehicleMake } from "../../interfaces/IVehicleMake.ts";
+import { useCreateVehicleModel } from "../../hooks/useCreateVehicleModel";
+import {useFetchVehicleMakes} from "../../hooks/useFetchVheicleMakes.ts";
 
 export const NewCarPage = observer(() => {
     const navigate = useNavigate();
-    const [makes, setMakes] = useState<IVehicleMake[]>([]);
-
-    const fetchMakes = async () => {
-        try {
-            const response = await axios.get<Record<string, IVehicleMake>>('https://mono-react-app-default-rtdb.firebaseio.com/VehicleMakes.json');
-            const makesArray: IVehicleMake[] = Object.keys(response.data).map(key => ({
-                Id: key,
-                Name: response.data[key].Name,
-                Abrv: response.data[key].Abrv,
-            }));
-            setMakes(makesArray);
-        } catch (error) {
-            console.error("Failed to fetch vehicle makes", error);
-        }
-    };
-
-    useEffect(() => {
-        fetchMakes();
-    }, []);
+    const { makes, loading: makesLoading, error: makesError } = useFetchVehicleMakes();
+    const { createVehicleModel, loading: createLoading, error: createError } = useCreateVehicleModel();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (vehicleFormStore.validate()) {
             try {
-                await axios.post('https://mono-react-app-default-rtdb.firebaseio.com/VehicleModels.json', {
+                await createVehicleModel({
                     Name: vehicleFormStore.Name,
                     MakeId: vehicleFormStore.MakeId,
                     Abrv: vehicleFormStore.Abrv,
                 });
                 vehicleFormStore.resetForm();
-                navigate('/cars');
+                navigate("/cars");
             } catch (error) {
                 console.error("Failed to add vehicle", error);
             }
@@ -45,7 +27,7 @@ export const NewCarPage = observer(() => {
     };
 
     return (
-      <div className="flex flex-col items-center justify-center   p-4">
+      <div className="flex flex-col items-center justify-center p-4">
           <div className="w-full max-w-lg p-6">
               <h1 className="text-xl font-bold mb-4">Create A New Car</h1>
               <h2 className="text-lg mb-2">What do you need to do?</h2>
@@ -55,6 +37,10 @@ export const NewCarPage = observer(() => {
                   <li>Select a Abbreviation for that Car</li>
                   <li>Submit the form</li>
               </ol>
+
+              {makesLoading && <p>Loading vehicle makes...</p>}
+              {makesError && <p className="text-red-500">{makesError}</p>}
+
               <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                       <label className="block">Name</label>
@@ -70,18 +56,15 @@ export const NewCarPage = observer(() => {
                   </div>
 
                   <div>
-                      <label className="block">Make</label>
+                      <label className="block">Car Maker</label>
                       <select
                         value={vehicleFormStore.MakeId}
                         onChange={(e) => vehicleFormStore.setMakeId(e.target.value)}
                         className="mt-1 p-2 w-full border rounded"
                       >
-                          <option value="">Select a Make</option>
+                          <option value="">Select a Maker</option>
                           {makes.map((make) => (
-                            <option
-                              key={make.Id}
-                              value={make.Id}
-                            >
+                            <option key={make.Id} value={make.Id}>
                                 {make.Name}
                             </option>
                           ))}
@@ -107,9 +90,12 @@ export const NewCarPage = observer(() => {
                   <button
                     type="submit"
                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 w-full"
+                    disabled={createLoading}
                   >
                       Submit
                   </button>
+
+                  {createError && <p className="text-red-500">{createError}</p>}
               </form>
           </div>
       </div>

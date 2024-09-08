@@ -35,9 +35,14 @@ class VehicleModelsStore {
     });
   }
 
-  fetchVehicleModels = async () => {
+  fetchVehicleModels = async (resetPaging: boolean = false) => {
     this.loading = true;
     try {
+      if (resetPaging) {
+        this.currentPage = 1;
+        this.lastVisible = null;
+      }
+
       let url = `https://mono-react-app-default-rtdb.firebaseio.com/VehicleModels.json?orderBy="${this.sortField}"&limitToFirst=${this.pageSize + 1}`;
       url += `&sort=${this.sortOrder}`;
 
@@ -81,15 +86,19 @@ class VehicleModelsStore {
     this.fetchVehicleModels();
   };
 
-  setSort = (field: string, order: "asc" | "desc") => {
-    this.sortField = field;
-    this.sortOrder = order;
-    this.fetchVehicleModels();
+  setFilter = (filter: string) => {
+    runInAction(() => {
+      this.filter = filter;
+    });
+    this.fetchVehicleModels(true);
   };
 
-  setFilter = (filter: string) => {
-    this.filter = filter;
-    this.fetchVehicleModels();
+  setSort = (field: string, order: "asc" | "desc") => {
+    runInAction(() => {
+      this.sortField = field;
+      this.sortOrder = order;
+    });
+    this.fetchVehicleModels(true);
   };
 
   createVehicleModel = async (model: IVehicleModel) => {
