@@ -65,11 +65,11 @@ class VehicleMakesStore {
         this.setVehicleMakes(data);
         this.loading = false;
 
-
         if (data.length < this.pageSize) {
           this.lastVisible = null;
         } else {
-          this.lastVisible = data[data.length - 1].Id;
+          const lastItemId = data[data.length - 1].Id;
+          this.lastVisible = lastItemId ? lastItemId : null;
         }
       });
     } catch (error) {
