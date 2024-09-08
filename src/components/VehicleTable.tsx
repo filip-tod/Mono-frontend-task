@@ -122,12 +122,7 @@ const VehicleTable = observer(({ type, onEdit, onCreate }: VehicleTableProps) =>
       <h1 className="text-xl font-bold mb-4">
         {type === "makes" ? "Vehicle Makes" : "Vehicle Models"}
       </h1>
-      <button
-        onClick={onCreate}
-        className="mb-4 px-4 py-2 bg-blue-500 text-white hover:bg-blue-700"
-      >
-        Add New {type === "makes" ? "Maker" : "Car Model"}
-      </button>
+
       <input
         type="text"
         placeholder={type === "makes" ? "Filter By Id" : "Filter By Name"}
@@ -162,8 +157,20 @@ const VehicleTable = observer(({ type, onEdit, onCreate }: VehicleTableProps) =>
                 </td>
               ))}
               <td className="px-6 py-4 border-b border-gray-200">
-                <button onClick={() => handleEdit(item.Id)} className="text-blue-500 hover:text-blue-700 mr-2">Edit</button>
-                <button onClick={() => handleDelete(item.Id)} className="text-red-500 hover:text-red-700">Delete</button>
+                <div className="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0">
+                  <button
+                    onClick={() => handleEdit(item.Id!)}
+                    className="text-blue-500 hover:text-blue-700 "
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item.Id!)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    Delete
+                  </button>
+                </div>
               </td>
             </tr>
           ))}
@@ -188,6 +195,12 @@ const VehicleTable = observer(({ type, onEdit, onCreate }: VehicleTableProps) =>
           className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
         >
           Previous
+        </button>
+        <button
+          onClick={onCreate}
+          className=" px-4 py-2 bg-blue-500 text-white hover:bg-blue-700"
+        >
+          Add New {type === "makes" ? "Maker" : "Car Model"}
         </button>
         <span>Page {store.currentPage}</span>
         <button

@@ -1,11 +1,17 @@
-import {observer} from "mobx-react-lite";
-import {IModalProps} from "../../../interfaces/IModalProps.ts";
-import {useEffect} from "react";
-import {vehicleMakersFormStore} from "../../../stores/VehicleMakersFormStore .ts";
+import { observer } from "mobx-react-lite";
+import { IModalProps } from "../../../interfaces/IModalProps.ts";
+import { useEffect } from "react";
+import { vehicleMakersFormStore } from "../../../stores/VehicleMakersFormStore .ts";
+import { useCreateVehicleMake } from "../../../hooks/useCreateVehicleMake";
+import { useUpdateVehicleMake } from "../../../hooks/useUpdateVehicleMake";
 import axios from "axios";
 
 export const MakersModal = observer(({ isOpen, onClose, itemId, endpoint, onSuccess }: IModalProps) => {
 
+  const { createVehicleMake, loading: createLoading } = useCreateVehicleMake();
+  const { updateVehicleMake, loading: updateLoading } = useUpdateVehicleMake();
+
+  // Fetch data for edit
   const fetchData = async () => {
     if (itemId) {
       try {
@@ -29,17 +35,15 @@ export const MakersModal = observer(({ isOpen, onClose, itemId, endpoint, onSucc
     if (vehicleMakersFormStore.validate()) {
       try {
         if (itemId) {
-          await axios.put(`${endpoint}/${itemId}.json`, {
+          await updateVehicleMake(itemId, {
             Name: vehicleMakersFormStore.Name,
             Abrv: vehicleMakersFormStore.Abrv,
           });
         } else {
-          const response = await axios.post(`${endpoint}.json`, {
+          await createVehicleMake({
             Name: vehicleMakersFormStore.Name,
             Abrv: vehicleMakersFormStore.Abrv,
           });
-          const newId = response.data.name;
-          await axios.patch(`${endpoint}/${newId}.json`, { Id: newId });
         }
         onSuccess();
         onClose();
@@ -72,8 +76,11 @@ export const MakersModal = observer(({ isOpen, onClose, itemId, endpoint, onSucc
           className="w-full mb-4 p-2 border border-gray-300 rounded"
         />
         <div className="flex justify-end space-x-2">
-          <button onClick={handleSubmit}
-                  className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+          <button
+            onClick={handleSubmit}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            disabled={createLoading || updateLoading}
+          >
             {itemId ? 'Update' : 'Create'}
           </button>
           <button onClick={onClose} className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">

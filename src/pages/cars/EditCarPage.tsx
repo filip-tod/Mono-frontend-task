@@ -1,70 +1,38 @@
-import  { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { IVehicleModel } from "../../interfaces/IVehicleModel.ts";
-import { IVehicleMake } from "../../interfaces/IVehicleMake.ts";
-
-interface IMake {
-    Id: string;
-    Name: string;
-}
+import { useParams, useNavigate } from "react-router-dom";
+import { useFetchVehicleModel } from "../../hooks/useFetchVehicleModel";
+import {useFetchVehicleMakes} from "../../hooks/useFetchVheicleMakes.ts";
+import {useUpdateVehicleModel} from "../../hooks/useUpdateVehicleModel.ts";
 
 const EditCarPage = () => {
     const { id } = useParams<{ id: string }>();
-    const [car, setCar] = useState<IVehicleModel | null>(null);
-    const [makes, setMakes] = useState<IMake[]>([]);
+    const { vehicleModel, loading: modelLoading, error: modelError, setVehicleModel } = useFetchVehicleModel(id);
+    const { makes, loading: makesLoading, error: makesError } = useFetchVehicleMakes();
+    const { updateVehicleModel, loading: updateLoading, error: updateError } = useUpdateVehicleModel();
     const navigate = useNavigate();
-
-    useEffect(() => {
-        const fetchCar = async () => {
-            try {
-                const response = await axios.get(`https://mono-react-app-default-rtdb.firebaseio.com/VehicleModels/${id}.json`);
-                setCar(response.data);
-            } catch (error) {
-                console.error("Failed to fetch car data.", error);
-            }
-        };
-
-        fetchCar();
-    }, [id]);
-
-    const fetchMakes = async () => {
-        try {
-            const response = await axios.get<Record<string, IVehicleMake>>('https://mono-react-app-default-rtdb.firebaseio.com/VehicleMakes.json');
-            const makesArray: IVehicleMake[] = Object.keys(response.data).map(key => ({
-                Id: key,
-                Name: response.data[key].Name,
-                Abrv: response.data[key].Abrv,
-            }));
-            setMakes(makesArray);
-        } catch (error) {
-            console.error("Failed to fetch vehicle makes", error);
-        }
-    };
-
-    useEffect(() => {
-        fetchMakes();
-    }, []);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setCar(prevCar => prevCar ? { ...prevCar, [name]: value } : null);
+        setVehicleModel(prevModel => prevModel ? { ...prevModel, [name]: value } : null);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!car) return;
+        if (!vehicleModel || !id) return;
 
         try {
-            await axios.put(`https://mono-react-app-default-rtdb.firebaseio.com/VehicleModels/${id}.json`, car);
+            await updateVehicleModel(id, vehicleModel);
             navigate('/cars');
         } catch (error) {
-            console.error("Failed to update car.", error);
+            console.error("Failed to update vehicle model.", error);
         }
     };
 
-    if (!car) {
+    if (modelLoading || makesLoading) {
         return <div className="flex items-center justify-center h-screen">Loading...</div>;
+    }
+
+    if (modelError || makesError) {
+        return <div className="flex items-center justify-center h-screen">Error loading data</div>;
     }
 
     return (
@@ -78,7 +46,7 @@ const EditCarPage = () => {
                         type="text"
                         id="Name"
                         name="Name"
-                        value={car.Name || ''}
+                        value={vehicleModel?.Name || ''}
                         onChange={handleInputChange}
                         className="mt-1 block w-full p-2 border rounded"
                       />
@@ -89,17 +57,17 @@ const EditCarPage = () => {
                         type="text"
                         id="Abrv"
                         name="Abrv"
-                        value={car.Abrv || ''}
+                        value={vehicleModel?.Abrv || ''}
                         onChange={handleInputChange}
                         className="mt-1 block w-full p-2 border rounded"
                       />
                   </div>
                   <div>
-                      <label htmlFor="MakeId" className="block">Make ID</label>
+                      <label htmlFor="MakeId" className="block">Car Maker</label>
                       <select
                         id="MakeId"
                         name="MakeId"
-                        value={car.MakeId || ''}
+                        value={vehicleModel?.MakeId || ''}
                         onChange={handleInputChange}
                         className="mt-1 block w-full p-2 border rounded"
                       >
@@ -114,9 +82,11 @@ const EditCarPage = () => {
                   <button
                     type="submit"
                     className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 w-full"
+                    disabled={updateLoading}
                   >
                       Save Changes
                   </button>
+                  {updateError && <p className="text-red-500">{updateError}</p>}
               </form>
           </div>
       </div>
