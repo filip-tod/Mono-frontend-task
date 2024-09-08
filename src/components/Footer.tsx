@@ -4,7 +4,6 @@ import LinkedIcon from '../assets/icons/linkedIn/icons8-linkedin.svg';
 import GithubIcon from '../assets/icons/github/icons8-github.svg';
 import {DisclosurePage} from "../pages/disclosurePage/DisclosurePage.tsx";
 
-
 export default function Footer() {
     return (
         <footer className="bg-gray-800 text-white mt-10">
