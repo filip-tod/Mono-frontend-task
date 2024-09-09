@@ -18,15 +18,13 @@ type VehicleModelColumns = keyof IVehicleModel;
 const VehicleTable = observer(({ type, onEdit, onCreate }: VehicleTableProps) => {
   const navigate = useNavigate();
   const store = type === "makes" ? vehicleMakesStore : vehicleModelsStore;
-
-  // Default sortiranje je po "Name" za models, a po "Id" za makes
   const [sortField, setSortField] = useState<string>(type === "makes" ? "Id" : "Name");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const sortOrder ="asc";
   const [filter, setFilter] = useState<string>("");
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const columns: VehicleMakeColumns[] | VehicleModelColumns[] =
-    type === "makes" ? ["Id", "Name", "Abrv"] : ["Id", "Name", "MakeId", "Abrv"];
+    type === "makes" ? ["Id", "Name", "Abrv"] :  ["Name", "MakeId", "Abrv"];
 
   useEffect(() => {
     if (type === "makes") {
@@ -37,7 +35,8 @@ const VehicleTable = observer(({ type, onEdit, onCreate }: VehicleTableProps) =>
   }, [type]);
 
   useEffect(() => {
-    store.setSort(sortField, sortOrder);
+    store.setSort();
+
   }, [sortField, sortOrder, store]);
 
   useEffect(() => {
@@ -59,16 +58,9 @@ const VehicleTable = observer(({ type, onEdit, onCreate }: VehicleTableProps) =>
   }, [filter, store]);
 
   const handleSort = (field: string) => {
-    // Ograničavamo sortiranje: samo po "Id" za makes i po "Name" za models
-    if (
-      (type === "makes" && field === "Id") ||
-      (type === "models" && field === "Name")
-    ) {
-      const newOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
       setSortField(field);
-      setSortOrder(newOrder);
-      store.setSort(field, newOrder);
-    }
+      store.setSort();
+
   };
 
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,7 +117,7 @@ const VehicleTable = observer(({ type, onEdit, onCreate }: VehicleTableProps) =>
 
       <input
         type="text"
-        placeholder={type === "makes" ? "Filter By Id" : "Filter By Name"}
+        placeholder={type === "makes" ? "Filter By Id (case sensitive)" : "Filter By Name (case sensitive)"}
         value={filter}
         onChange={handleFilterChange}
         className="mb-4 p-2 border rounded w-full"
@@ -143,7 +135,8 @@ const VehicleTable = observer(({ type, onEdit, onCreate }: VehicleTableProps) =>
                 {column} {sortField === column ? (sortOrder === "asc" ? "↑" : "↓") : ""}
               </th>
             ))}
-            <th className="px-6 py-3 border-b border-gray-200 bg-gradient-to-r from-blue-500 to-purple-500 text-left text-xs font-medium text-black uppercase tracking-wider cursor-pointer">
+            <th
+              className="px-6 py-3 border-b border-gray-200 bg-gradient-to-r from-blue-500 to-purple-500 text-left text-xs font-medium text-black uppercase tracking-wider cursor-pointer">
               Actions
             </th>
           </tr>
@@ -196,12 +189,6 @@ const VehicleTable = observer(({ type, onEdit, onCreate }: VehicleTableProps) =>
         >
           Previous
         </button>
-        <button
-          onClick={onCreate}
-          className=" px-4 py-2 bg-blue-500 text-white hover:bg-blue-700"
-        >
-          Add New {type === "makes" ? "Maker" : "Car Model"}
-        </button>
         <span>Page {store.currentPage}</span>
         <button
           onClick={handleNextPage}
@@ -211,6 +198,12 @@ const VehicleTable = observer(({ type, onEdit, onCreate }: VehicleTableProps) =>
           Next
         </button>
       </div>
+      <button
+        onClick={onCreate}
+        className="px-4 mt-5 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+      >
+        Add New {type === "makes" ? "Maker" : "Car Model"}
+      </button>
     </div>
   );
 });
