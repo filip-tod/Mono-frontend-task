@@ -9,7 +9,6 @@ class VehicleModelsStore {
   pageSize = 5;
   lastVisible: string | null = null;
   sortField = "Name";
-  sortOrder: "asc" | "desc" = "asc";
   filter = "";
 
   constructor() {
@@ -20,7 +19,6 @@ class VehicleModelsStore {
       lastVisible: observable,
       pageSize: observable,
       sortField: observable,
-      sortOrder: observable,
       filter: observable,
       fetchVehicleModels: action,
       setVehicleModels: action,
@@ -44,7 +42,6 @@ class VehicleModelsStore {
       }
 
       let url = `https://mono-react-app-default-rtdb.firebaseio.com/VehicleModels.json?orderBy="${this.sortField}"&limitToFirst=${this.pageSize + 1}`;
-      url += `&sort=${this.sortOrder}`;
 
       if (this.filter) {
         url += `&startAt="${this.filter}"&endAt="${this.filter}\uf8ff"`;
@@ -55,6 +52,11 @@ class VehicleModelsStore {
       }
 
       const response = await axios.get(url);
+
+      if (!response.data || Object.keys(response.data).length === 0) {
+        throw new Error("No data returned from the API");
+      }
+
       const dataKeys = Object.keys(response.data);
 
       const data: IVehicleModel[] = dataKeys.slice(0, this.pageSize).map((key) => ({
@@ -65,7 +67,8 @@ class VehicleModelsStore {
       runInAction(() => {
         this.setVehicleModels(data);
         this.loading = false;
-        this.lastVisible = dataKeys.length > this.pageSize ? dataKeys[this.pageSize] : null;
+
+        this.lastVisible = data.length < this.pageSize ? null : data[data.length - 1].Id;
       });
     } catch (error) {
       console.error("Failed to fetch vehicle models", error);
@@ -89,14 +92,17 @@ class VehicleModelsStore {
   setFilter = (filter: string) => {
     runInAction(() => {
       this.filter = filter;
+      this.currentPage = 1;
+      this.lastVisible = null;
     });
     this.fetchVehicleModels(true);
   };
 
-  setSort = (field: string, order: "asc" | "desc") => {
+  setSort = () => {
     runInAction(() => {
-      this.sortField = field;
-      this.sortOrder = order;
+      this.sortField = "Name";
+      this.currentPage = 1;
+      this.lastVisible = null;
     });
     this.fetchVehicleModels(true);
   };
@@ -138,7 +144,6 @@ class VehicleModelsStore {
   prevPage = () => {
     if (this.currentPage > 1) {
       this.currentPage -= 1;
-      this.lastVisible = null;
       this.fetchVehicleModels();
     }
   };
