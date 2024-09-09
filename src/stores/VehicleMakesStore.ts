@@ -8,6 +8,7 @@ class VehicleMakesStore {
   currentPage = 1;
   pageSize = 5;
   lastVisible: string | null = null;
+  firstVisible: string | null = null;
   sortField = "Name";
   sortOrder: "asc" | "desc" = "asc";
   filter = "";
@@ -32,6 +33,7 @@ class VehicleMakesStore {
       setPageSize: action,
       setSort: action,
       setFilter: action,
+      firstVisible: observable,
     });
   }
 
@@ -41,16 +43,17 @@ class VehicleMakesStore {
       if (resetPaging) {
         this.currentPage = 1;
         this.lastVisible = null;
+        this.firstVisible = null; // Resetiraj firstVisible pri resetiranju
       }
 
-      let url = `https://mono-react-app-default-rtdb.firebaseio.com/VehicleMakes.json?orderBy="Id"&limitToFirst=${this.pageSize + 1}`;
+      let url = `https://mono-react-app-default-rtdb.firebaseio.com/VehicleMakes.json?orderBy="${this.sortField}"&limitToFirst=${this.pageSize + 1}`;
 
       if (this.filter) {
         url += `&startAt="${this.filter}"&endAt="${this.filter}\uf8ff"`;
       }
 
-      if (this.lastVisible) {
-        url += `&startAt="${this.lastVisible}"`;
+      if (this.lastVisible && this.currentPage > 1) {
+        url += `&startAt="${this.lastVisible}"`; // Kreći se unaprijed
       }
 
       const response = await axios.get(url);
@@ -65,12 +68,9 @@ class VehicleMakesStore {
         this.setVehicleMakes(data);
         this.loading = false;
 
+        this.lastVisible = data.length < this.pageSize ? null : data[data.length - 1].Id ?? null;
 
-        if (data.length < this.pageSize) {
-          this.lastVisible = null;
-        } else {
-          this.lastVisible = data[data.length - 1].Id;
-        }
+        this.firstVisible = data.length > 0 ? data[0].Id ?? null : null;
       });
     } catch (error) {
       console.error("Failed to fetch vehicle makes", error);
@@ -98,10 +98,11 @@ class VehicleMakesStore {
     this.fetchVehicleMakes(true);
   };
 
-  setSort = (field: string, order: "asc" | "desc") => {
+  setSort = () => {
     runInAction(() => {
-      this.sortField = field;
-      this.sortOrder = order;
+      this.sortField = "Id";
+      this.sortOrder = "asc";
+      this.lastVisible = null;
     });
     this.fetchVehicleMakes(true);
   };
@@ -137,14 +138,39 @@ class VehicleMakesStore {
     if (this.lastVisible) {
       this.currentPage += 1;
       this.fetchVehicleMakes();
+    } else {
+      console.warn("No more pages to load or lastVisible is not set.");
     }
   };
 
   prevPage = () => {
-    if (this.currentPage > 1) {
+    if (this.currentPage > 1 && this.firstVisible) {
       this.currentPage -= 1;
-      this.lastVisible = null;
-      this.fetchVehicleMakes();
+
+      let url = `https://mono-react-app-default-rtdb.firebaseio.com/VehicleMakes.json?orderBy="${this.sortField}"&limitToLast=${this.pageSize + 1}&endAt="${this.firstVisible}"`;
+
+      axios.get(url)
+        .then((response) => {
+          const dataKeys = Object.keys(response.data);
+          const data: IVehicleMake[] = dataKeys.slice(1, this.pageSize + 1).map((key) => ({
+            ...response.data[key],
+            Id: key,
+          }));
+
+          runInAction(() => {
+            this.setVehicleMakes(data);
+            this.loading = false;
+
+            this.firstVisible = data.length > 0 ? data[0].Id ?? null : null;
+            this.lastVisible = data.length < this.pageSize ? null : data[data.length - 1].Id ?? null;
+          });
+        })
+        .catch((error) => {
+          console.error("Failed to fetch previous page", error);
+          runInAction(() => {
+            this.loading = false;
+          });
+        });
     }
   };
 }

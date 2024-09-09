@@ -11,7 +11,6 @@ export const MakersModal = observer(({ isOpen, onClose, itemId, endpoint, onSucc
   const { createVehicleMake, loading: createLoading } = useCreateVehicleMake();
   const { updateVehicleMake, loading: updateLoading } = useUpdateVehicleMake();
 
-  // Fetch data for edit
   const fetchData = async () => {
     if (itemId) {
       try {

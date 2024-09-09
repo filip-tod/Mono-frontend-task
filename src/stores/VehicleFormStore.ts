@@ -26,7 +26,13 @@ class VehicleFormStore {
 
     setName(value: string) {
         this.Name = value;
-        this.errors.Name = value ? '' : 'Name is required';
+        if (!value) {
+            this.errors.Name = 'Name is required';
+        } else if (value.length < 3) {
+            this.errors.Name = 'Name must be at least 3 characters long';
+        } else {
+            this.errors.Name = '';
+        }
     }
 
     setMakeId(value: string) {
