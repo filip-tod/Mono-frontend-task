@@ -30,6 +30,7 @@ const routes = {
   notFound: {
     path: "*",
     name: "Not Found",
+
   },
 };
 
